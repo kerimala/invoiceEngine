@@ -28,7 +28,13 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "Packages\\InvoiceFileIngest\\": "packages/InvoiceFileIngest/src/",
+            "Packages\\InvoiceParser\\": "packages/InvoiceParser/src/",
+            "Packages\\PricingEngine\\": "packages/PricingEngine/src/",
+            "Packages\\InvoiceAssembler\\": "packages/InvoiceAssembler/src/",
+            "Packages\\PdfRenderer\\": "packages/PdfRenderer/src/",
+            "Packages\\InvoiceSender\\": "packages/InvoiceSender/src/"
         }
     },
     "autoload-dev": {

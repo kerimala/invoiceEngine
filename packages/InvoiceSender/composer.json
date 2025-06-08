@@ -1,0 +1,16 @@
+{
+  "name": "vendor/invoice-sender",
+  "description": "Handles sending invoices to ERP/email.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\InvoiceSender\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\InvoiceSender\\Providers\\InvoiceSenderServiceProvider"
+      ]
+    }
+  }
+} 

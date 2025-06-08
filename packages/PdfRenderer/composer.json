@@ -1,0 +1,16 @@
+{
+  "name": "vendor/pdf-renderer",
+  "description": "Handles PDF rendering for invoices.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\PdfRenderer\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\PdfRenderer\\Providers\\PdfRendererServiceProvider"
+      ]
+    }
+  }
+} 

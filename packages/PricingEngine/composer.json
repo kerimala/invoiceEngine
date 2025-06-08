@@ -1,0 +1,16 @@
+{
+  "name": "vendor/pricing-engine",
+  "description": "Handles invoice pricing logic.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\PricingEngine\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\PricingEngine\\Providers\\PricingEngineServiceProvider"
+      ]
+    }
+  }
+} 
