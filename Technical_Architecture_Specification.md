@@ -56,6 +56,33 @@ This split allows independent deployment, scaling and clear error localisation.
 
 ## 4. Technical Architecture
 
+# Agreements: Versioning and Extensibility
+
+Agreements are versioned, immutable configuration objects that encapsulate all business rules and settings relevant to invoice processing. Each Agreement version is uniquely identified and may include, but is not limited to:
+
+- Pricing margins and rules
+- Language and localization specifications  
+- Number formatting and conversions
+- Branding elements (e.g., logo inclusion)
+- Any other business-specific configuration
+
+## Key Principles
+
+### Versioning
+Every Agreement is versioned. Once created, a version is immutable and must be referenced explicitly by all processing components and events.
+
+### Extensibility
+The Agreement schema is intentionally flexible and extensible, allowing for the addition of new configuration fields without impacting existing versions or historical data.
+
+### Historical Accuracy
+All invoice processing must use the Agreement version that was in effect at the time of the invoice's creation or event occurrence, ensuring full auditability and reproducibility.
+
+### Component Responsibility
+The Agreement Service is responsible for resolving and providing the correct Agreement version for a given invoice or event. All downstream components (e.g., Pricing Engine, PDF Renderer, Invoice Assembler) must use the configuration from the referenced Agreement version, not a default or latest version.
+
+### Event Sourcing
+All events that depend on Agreement data must include the Agreement version (or a resolvable reference) in their payloads.
+
 ### Microservices
 
 Each service is designed to be stateless, microservice-ready, and independently deployable. Here's a brief technology overview:
