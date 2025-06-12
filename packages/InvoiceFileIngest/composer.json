@@ -1,0 +1,16 @@
+{
+  "name": "vendor/invoice-file-ingest",
+  "description": "Handles invoice file ingestion.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\InvoiceFileIngest\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\InvoiceFileIngest\\Providers\\InvoiceFileIngestServiceProvider"
+      ]
+    }
+  }
+} 

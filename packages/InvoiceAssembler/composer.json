@@ -1,0 +1,16 @@
+{
+  "name": "vendor/invoice-assembler",
+  "description": "Handles invoice assembling.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\InvoiceAssembler\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\InvoiceAssembler\\Providers\\InvoiceAssemblerServiceProvider"
+      ]
+    }
+  }
+} 

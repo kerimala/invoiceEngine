@@ -1,0 +1,16 @@
+{
+  "name": "vendor/invoice-parser",
+  "description": "Handles invoice parsing.",
+  "autoload": {
+    "psr-4": {
+      "Packages\\InvoiceParser\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\InvoiceParser\\Providers\\InvoiceParserServiceProvider"
+      ]
+    }
+  }
+} 
