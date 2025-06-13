@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
 use Packages\PricingEngine\Events\PricedInvoiceLine;
 use Packages\PricingEngine\Services\PricingEngineService;
+use Illuminate\Support\Facades\Event;
 
 class ApplyPricing implements ShouldQueue
 {
@@ -21,7 +22,7 @@ class ApplyPricing implements ShouldQueue
 
         foreach ($event->parsedLines as $line) {
             $pricedLine = $this->pricingEngineService->priceLine($line, $agreement);
-            PricedInvoiceLine::dispatch($pricedLine, $event->filePath);
+            Event::dispatch(new PricedInvoiceLine($pricedLine, $event->filePath));
         }
     }
 } 
