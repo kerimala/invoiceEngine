@@ -24,6 +24,7 @@ These packages are loaded into the main Laravel application via `composer.json`.
 ## 3. Where are the tests and the "microservices"?
 
 -   **Microservices (Internal Packages):** They are located in the `/packages` directory. The current packages are:
+    -   `AgreementService` (New)
     -   `InvoiceFileIngest`
     -   `InvoiceParser`
     -   `PricingEngine`
@@ -48,7 +49,8 @@ Tests can be run from the command line using `composer test`.
 
 Yes, the entire application relies on third-party packages managed by **Composer** in the `/vendor` directory. This directory contains *all* external dependencies, including the Laravel framework itself.
 
-Two vendor packages of particular importance to our application logic are:
+Three vendor packages of particular importance to our application logic are:
+-   **`phpoffice/phpspreadsheet`**: Used by the `InvoiceParser` to read `.xlsx` and `.csv` files.
 -   **`spatie/laravel-event-sourcing`**: This package provides the foundation for our event-driven architecture. It simplifies the process of storing, tracking, and reacting to domain events.
 -   **`spatie/laravel-pdf`**: This package is used (within the `PdfRenderer` package) to generate PDF invoices from HTML templates.
 
@@ -66,9 +68,9 @@ The event-driven nature of the application creates a logical processing pipeline
     -   **Listened to by:** `InvoiceParserService` (to begin parsing).
 
 2.  `CarrierInvoiceLineExtracted`: Dispatched by `InvoiceParserService` after the data has been successfully extracted from the file.
-    -   **Listened to by:** `PricingEngineService` (to calculate costs).
+    -   **Listened to by:** `ApplyPricing` listener in the `PricingEngine`.
 
-3.  An event is dispatched by `PricingEngineService` after the prices for the extracted invoice lines have been calculated.
+3.  `PricedInvoiceLine`: Dispatched by the `ApplyPricing` listener for each processed line. The last line includes a `last_line` flag.
     -   **Listened to by:** `InvoiceAssemblerService` (to assemble the final invoice).
 
 4.  `InvoiceAssembled`: Dispatched by `InvoiceAssemblerService` after the final invoice data structure has been created.
@@ -92,6 +94,6 @@ To facilitate manual testing of the invoice processing pipeline, a simple file u
 
 3.  **View:** A simple Blade view at `resources/views/invoice/create.blade.php` provides the HTML form for the file upload.
 
-4.  **Service Registration:** The `InvoiceFileIngestService` is registered as a singleton in the `InvoiceFileIngestServiceProvider` to allow for dependency injection in the controller.
+4.  **Service Registration:** All services are registered in their respective Service Providers to allow for dependency injection.
 
 To use it, run the local server (`php artisan serve`) and navigate to `/invoice/upload` in your browser. 

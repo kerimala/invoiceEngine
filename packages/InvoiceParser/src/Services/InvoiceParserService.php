@@ -4,6 +4,7 @@ namespace Packages\InvoiceParser\Services;
 
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
 use Illuminate\Support\Facades\Event;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class InvoiceParserService
 {
@@ -28,47 +29,36 @@ class InvoiceParserService
             throw new \Exception('File is empty: ' . $filePath);
         }
         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        if (!in_array($ext, ['csv', 'xml', 'txt'])) {
+        if (!in_array($ext, ['csv', 'xml', 'txt', 'xlsx'])) {
             throw new \Exception('Unsupported file format: ' . $ext);
         }
-        if ($ext === 'csv' || $ext === 'txt') {
-            $handle = fopen($filePath, 'r');
-            if (!$handle) {
-                throw new \Exception('Failed to open CSV file: ' . $filePath);
-            }
-            // Read the first line, strip BOM if present, and parse as CSV for the header
-            $firstLine = fgets($handle);
-            if ($firstLine === false) {
-                fclose($handle);
-                throw new \Exception('Failed to read CSV file: ' . $filePath);
-            }
-            $firstLine = preg_replace('/^\xEF\xBB\xBF/', '', $firstLine);
-            $header = str_getcsv($firstLine);
-            $header = array_map('trim', $header);
-            // Case-insensitive headers
-            $headerLower = array_map('strtolower', $header);
-            if (!in_array('header1', $headerLower) || !in_array('header2', $headerLower)) {
-                fclose($handle);
-                throw new \Exception('Missing required header(s) in CSV: ' . $filePath);
-            }
+
+        if ($ext === 'csv' || $ext === 'xlsx' || $ext === 'txt') {
+            $spreadsheet = IOFactory::load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+            $header = [];
             $parsedLines = [];
-            while (($row = fgetcsv($handle)) !== false) {
-                if (count($row) < 2) {
-                    continue; // skip malformed or empty lines
+            foreach ($worksheet->getRowIterator() as $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(FALSE); 
+                $lineData = [];
+                foreach ($cellIterator as $cell) {
+                    $lineData[] = $cell->getValue();
                 }
-                $rowAssoc = [];
-                foreach ($header as $j => $h) {
-                    if (isset($row[$j])) {
-                        $rowAssoc[$h] = $row[$j];
-                    }
+
+                if (empty($header)) {
+                    $header = $lineData;
+                    continue;
                 }
-                $parsedLines[] = $rowAssoc;
+                
+                $parsedLines[] = array_combine($header, $lineData);
             }
-            fclose($handle);
+
             if (count($parsedLines) === 0) {
-                throw new \Exception('No data lines found in CSV: ' . $filePath);
+                throw new \Exception('No data lines found in file: ' . $filePath);
             }
             Event::dispatch(new CarrierInvoiceLineExtracted($filePath, count($parsedLines), $parsedLines));
+
         } elseif ($ext === 'xml') {
             $xmlContent = file_get_contents($filePath);
             // Handle BOM

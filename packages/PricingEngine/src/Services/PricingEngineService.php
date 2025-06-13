@@ -10,30 +10,26 @@ class PricingEngineService
 {
     public function priceLine(array $parsedLine, array $agreement): array
     {
-        $this->validateInputs($parsedLine, $agreement);
+        $this->validateAgreement($agreement);
 
-        $multiplier = $agreement['multiplier'] ?? 100;
+        $rules = $agreement['rules'];
+        $multiplier = $agreement['multiplier'] ?? 1;
 
-        if ($multiplier < 0) {
-            throw new InvalidArgumentException('Agreement multiplier must be non-negative');
+        $baseCharge = (float) ($parsedLine[$rules['base_charge_column']] ?? 0);
+
+        $surchargeTotal = 0;
+        foreach ($parsedLine as $key => $value) {
+            if (str_starts_with($key, $rules['surcharge_prefix']) && str_ends_with($key, $rules['surcharge_suffix'])) {
+                $surchargeTotal += (float) $value;
+            }
         }
-
-        // Handle multiplier as 1.2 for 120%
-        if ($multiplier > 0 && $multiplier < 5) { // Heuristic for float multiplier
-             $multiplier = $multiplier * 100;
-        }
-
-
-        $quantity = $parsedLine['quantity'];
-        $unitPrice = $parsedLine['unit_price'];
-
-        $lineTotal = (int) round(($quantity * $unitPrice * $multiplier) / 100);
+        
+        $lineTotal = ($baseCharge + $surchargeTotal) * $multiplier;
 
         return array_merge($parsedLine, [
-            'line_total' => $lineTotal,
+            'line_total' => round($lineTotal, 2),
             'agreement_version' => $agreement['version'],
-            'currency' => $agreement['currency'] ?? null,
-            'language' => $agreement['language'] ?? null,
+            'currency' => $agreement['currency'] ?? 'EUR',
         ]);
     }
 
@@ -50,24 +46,22 @@ class PricingEngineService
         return $event;
     }
 
-    private function validateInputs(array $parsedLine, array $agreement): void
+    private function validateAgreement(array $agreement): void
     {
         if (empty($agreement['version'])) {
             throw new InvalidArgumentException('Agreement version is required');
         }
 
-        if (!isset($agreement['multiplier'])) {
-            // This is now handled by the default value in priceLine
-            // throw new InvalidArgumentException('Agreement multiplier is required');
+        if (empty($agreement['rules']['base_charge_column'])) {
+            throw new InvalidArgumentException('Base charge column rule is required in agreement');
         }
 
-
-        if (empty($parsedLine['quantity'])) {
-            throw new InvalidArgumentException('quantity is required');
+        if (empty($agreement['rules']['surcharge_prefix'])) {
+            throw new InvalidArgumentException('Surcharge prefix rule is required in agreement');
         }
-
-        if (empty($parsedLine['unit_price'])) {
-            throw new InvalidArgumentException('unit_price is required');
+        
+        if (empty($agreement['rules']['surcharge_suffix'])) {
+            throw new InvalidArgumentException('Surcharge suffix rule is required in agreement');
         }
     }
 
