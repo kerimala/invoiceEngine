@@ -9,20 +9,10 @@ use Packages\PdfRenderer\Events\PdfRendered;
 
 class InvoiceSenderServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        PdfRendered::class => [
-            SendInvoice::class,
-        ],
-    ];
-
     public function register()
     {
         $this->app->singleton(InvoiceSenderService::class, function ($app) {
             return new InvoiceSenderService();
         });
-    }
-
-    public function boot()
-    {
     }
 } 

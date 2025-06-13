@@ -9,20 +9,10 @@ use Packages\PricingEngine\Events\PricedInvoiceLine;
 
 class InvoiceAssemblerServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        PricedInvoiceLine::class => [
-            AssembleInvoice::class,
-        ],
-    ];
-
     public function register()
     {
         $this->app->singleton(InvoiceAssemblerService::class, function ($app) {
             return new InvoiceAssemblerService();
         });
-    }
-
-    public function boot()
-    {
     }
 } 

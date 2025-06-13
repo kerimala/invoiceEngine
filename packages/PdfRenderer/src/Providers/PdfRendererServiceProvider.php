@@ -9,12 +9,6 @@ use Packages\PdfRenderer\Services\PdfRendererService;
 
 class PdfRendererServiceProvider extends ServiceProvider
 {
-    protected $listen = [
-        InvoiceAssembled::class => [
-            RenderPdf::class,
-        ],
-    ];
-
     public function register()
     {
         $this->app->singleton(PdfRendererService::class, function ($app) {

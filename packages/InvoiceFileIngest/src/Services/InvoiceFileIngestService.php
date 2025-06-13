@@ -44,7 +44,7 @@ class InvoiceFileIngestService
         }
         $ext = array_pop($parts);
         $extLower = strtolower($ext);
-        $supported = ['csv', 'xml'];
+        $supported = ['csv', 'xml', 'txt'];
         if (!in_array($extLower, $supported)) {
             throw new \Exception('Unsupported file format: ' . $ext);
         }

@@ -28,10 +28,10 @@ class InvoiceParserService
             throw new \Exception('File is empty: ' . $filePath);
         }
         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        if (!in_array($ext, ['csv', 'xml'])) {
+        if (!in_array($ext, ['csv', 'xml', 'txt'])) {
             throw new \Exception('Unsupported file format: ' . $ext);
         }
-        if ($ext === 'csv') {
+        if ($ext === 'csv' || $ext === 'txt') {
             $handle = fopen($filePath, 'r');
             if (!$handle) {
                 throw new \Exception('Failed to open CSV file: ' . $filePath);
