@@ -42,10 +42,10 @@ class PricingEngineService
         return array_map(fn($line) => $this->priceLine($line, $agreement), $lines);
     }
 
-    public function priceLineAndEmit(array $parsedLine, array $agreement)
+    public function priceLineAndEmit(array $parsedLine, array $agreement, string $filePath)
     {
         $pricedLine = $this->priceLine($parsedLine, $agreement);
-        $event = new PricedInvoiceLine($pricedLine);
+        $event = new PricedInvoiceLine($pricedLine, $filePath);
         Event::dispatch($event);
         return $event;
     }

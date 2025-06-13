@@ -98,7 +98,7 @@ describe('PricingEngineService', function () {
         $service = new PricingEngineService();
         $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
         $agreement = ['version' => 'v1', 'multiplier' => 120];
-        $event = $service->priceLineAndEmit($parsedLine, $agreement);
+        $event = $service->priceLineAndEmit($parsedLine, $agreement, '/test/path.csv');
         expect($event)->toBeInstanceOf(PricedInvoiceLine::class);
         expect($event->agreement_version)->toBe('v1');
         expect($event->line_total)->toBe(2400);
@@ -106,6 +106,7 @@ describe('PricingEngineService', function () {
         Event::assertDispatched(PricedInvoiceLine::class, function ($event) {
             return $event->line_total === 2400;
         });
+        expect($event->filePath)->toBe('/test/path.csv');
     });
 
     it('handles agreement as an object', function () {
