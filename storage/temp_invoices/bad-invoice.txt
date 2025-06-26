@@ -1,0 +1,5 @@
+customer_id: CUST-001
+// Missing invoice_number
+date: 2025-05-01
+
+item: A, quantity: 1, unit_price: 5.00

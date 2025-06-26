@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<invoice>
+  <customer_id>CUST-XML</customer_id>
+  <date>2025-05-04</date>
+  <line_items>
+    <item>
+      <description>Widget E</description>
+      <quantity>5</quantity>
+      <unit_price>12.00</unit_price>
+    </item>
+  </line_items>
+</invoice>

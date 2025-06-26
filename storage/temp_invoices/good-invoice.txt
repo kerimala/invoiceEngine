@@ -1,0 +1,6 @@
+invoice_number: INV-202505
+customer_id: CUST-202
+date: 2025-05-02
+
+item: Widget A, quantity: 2, unit_price: 10.00
+item: Widget B, quantity: 1, unit_price: 20.50

@@ -1,0 +1,6 @@
+invoice_number,customer_id,date
+INV-CSV-001,CUST-CSV,2025-05-03
+
+description,quantity,unit_price
+Widget C,3,15.00
+Widget D,2,7.50
