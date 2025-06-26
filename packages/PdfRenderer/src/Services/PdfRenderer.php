@@ -2,33 +2,81 @@
 
 namespace Packages\PdfRenderer\Services;
 
-use Packages\PdfRenderer\Facades\Pdf;
-use Packages\PdfRenderer\Facades\PdfDocument;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Packages\InvoiceAssembler\DTOs\Invoice;
+use Illuminate\Support\Facades\View;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class PdfRenderer
 {
     /**
-     * Render an Invoice DTO to PDF and store it.
+     * Render invoice data to a PDF and store it.
      *
-     * @param Invoice $invoice
+     * @param array $invoiceData
      * @return string Path to stored PDF
      */
-    public function render(Invoice $invoice): string
+    public function render(array $invoiceData): string
     {
+        $invoiceId = $invoiceData['invoice_id'] ?? 'unknown_invoice';
+        Log::info('Starting PDF rendering.', ['invoice_id' => $invoiceId]);
+
         try {
-            $pdfDoc = Pdf::loadView('pdf.invoice', ['invoice' => $invoice]);
+            // Ensure the view file exists
+            if (!View::exists('pdf-renderer::invoice')) {
+                Log::error('PDF template view not found: pdf-renderer::invoice');
+                throw new \Exception('PDF template not found.');
+            }
 
-            $filename = 'invoices/' . $invoice->getId() . '.pdf';
+            // Render the HTML from a Blade view
+            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceData])->render();
+            Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId]);
 
+            // Create a new Dompdf instance
+            $options = new Options();
+            $options->set('isRemoteEnabled', false);
+            $options->set('tempDir', storage_path('app/temp')); // ensure temp dir exists
+            $dompdf = new Dompdf($options);
 
-            Storage::disk('local')->put($filename, $pdfDoc->output());
+            // Increase PHP limits for large documents
+            @ini_set('memory_limit', '1024M');
+            @set_time_limit(0);
 
+            $dompdf->loadHtml($html);
 
-            return $filename;
+            // (Optional) Setup the paper size and orientation
+            $dompdf->setPaper('A4', 'portrait');
+
+            // Render the HTML as PDF
+            $dompdf->render();
+            Log::debug('Dompdf rendered the HTML to PDF.', ['invoice_id' => $invoiceId]);
+
+            // Get the PDF output
+            $pdfOutput = $dompdf->output();
+            
+            // Define a filename
+            $filename = 'invoices/' . $invoiceId . '.pdf';
+
+            // Ensure directory exists
+            if (!Storage::disk('local')->exists('invoices')) {
+                Storage::disk('local')->makeDirectory('invoices');
+            }
+            
+            // Store the file
+            Storage::disk('local')->put($filename, $pdfOutput);
+            $fullPath = Storage::disk('local')->path($filename);
+            Log::info('PDF successfully rendered and stored.', ['invoice_id' => $invoiceId, 'path' => $fullPath]);
+            
+            return $fullPath;
+
         } catch (\Throwable $th) {
-            return $th->getMessage();
+            Log::error('Error during PDF rendering.', [
+                'invoice_id' => $invoiceId, 
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            // Re-throw the exception to be handled by the queue worker
+            throw $th;
         }
     }
 }

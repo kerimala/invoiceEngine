@@ -23,7 +23,21 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string|string>>
      */
     protected $listen = [
-        // Add your event listeners here
+        FileStored::class => [
+            ParseInvoiceFile::class,
+        ],
+        CarrierInvoiceLineExtracted::class => [
+            ApplyPricing::class,
+        ],
+        PricedInvoiceLine::class => [
+            AssembleInvoice::class,
+        ],
+        InvoiceAssembled::class => [
+            RenderPdf::class,
+        ],
+        PdfRendered::class => [
+            SendInvoice::class,
+        ],
     ];
 
     /**
@@ -31,29 +45,6 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Event::listen(
-            FileStored::class,
-            ParseInvoiceFile::class
-        );
-
-        Event::listen(
-            CarrierInvoiceLineExtracted::class,
-            ApplyPricing::class
-        );
-
-        Event::listen(
-            PricedInvoiceLine::class,
-            AssembleInvoice::class
-        );
-
-        Event::listen(
-            InvoiceAssembled::class,
-            RenderPdf::class
-        );
-
-        Event::listen(
-            PdfRendered::class,
-            SendInvoice::class
-        );
+        //
     }
 } 

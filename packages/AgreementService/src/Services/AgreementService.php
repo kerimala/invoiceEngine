@@ -2,6 +2,8 @@
 
 namespace Packages\AgreementService\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class AgreementService
 {
     /**
@@ -14,9 +16,10 @@ class AgreementService
      */
     public function getAgreementForCustomer(string $customerId): array
     {
+        Log::info('Fetching agreement for customer.', ['customerId' => $customerId]);
         // For now, return a hardcoded agreement.
         // The customerId is ignored in this placeholder.
-        return [
+        $agreement = [
             'version' => 'v1.2',
             'multiplier' => 1.15, // 115%
             'currency' => 'EUR',
@@ -27,5 +30,8 @@ class AgreementService
                 'surcharge_suffix' => ' Charge',
             ]
         ];
+
+        Log::info('Agreement found for customer.', ['customerId' => $customerId, 'agreement_version' => $agreement['version']]);
+        return $agreement;
     }
 } 
