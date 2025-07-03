@@ -55,11 +55,17 @@ class PricingEngineServiceTest extends TestCase
     {
         $parsedLine = $this->getSampleParsedLine();
         $agreement = $this->getSampleAgreement();
+        $agreement['vat_rate'] = 0.21;
 
         $pricedLine = $this->service->priceLine($parsedLine, $agreement);
 
         // (8.36 [Weight] + 1.27 [XC1] + 0.03 [XC2] + 0.37 [XC3] + 17.03 [XC4]) * 1.15 [multiplier]
-        $expectedTotal = (8.36 + 1.27 + 0.03 + 0.37 + 17.03) * 1.15;
+        $expectedNettTotal = (8.36 + 1.27 + 0.03 + 0.37 + 17.03) * 1.15;
+        $expectedVatAmount = $expectedNettTotal * 0.21;
+        $expectedTotal = $expectedNettTotal + $expectedVatAmount;
+
+        $this->assertEquals(round($expectedNettTotal, 2), $pricedLine['nett_total']);
+        $this->assertEquals(round($expectedVatAmount, 2), $pricedLine['vat_amount']);
         $this->assertEquals(round($expectedTotal, 2), $pricedLine['line_total']);
         $this->assertEquals('v1.2', $pricedLine['agreement_version']);
         $this->assertEquals('EUR', $pricedLine['currency']);
@@ -75,10 +81,16 @@ class PricingEngineServiceTest extends TestCase
         }
         
         $agreement = $this->getSampleAgreement();
+        $agreement['vat_rate'] = 0.21;
 
         $pricedLine = $this->service->priceLine($parsedLine, $agreement);
         
-        $expectedTotal = 8.36 * 1.15;
+        $expectedNettTotal = 8.36 * 1.15;
+        $expectedVatAmount = $expectedNettTotal * 0.21;
+        $expectedTotal = $expectedNettTotal + $expectedVatAmount;
+
+        $this->assertEquals(round($expectedNettTotal, 2), $pricedLine['nett_total']);
+        $this->assertEquals(round($expectedVatAmount, 2), $pricedLine['vat_amount']);
         $this->assertEquals(round($expectedTotal, 2), $pricedLine['line_total']);
     }
 
@@ -87,4 +99,4 @@ class PricingEngineServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->service->priceLine([], ['version' => 'v1', 'rules' => []]);
     }
-} 
+}

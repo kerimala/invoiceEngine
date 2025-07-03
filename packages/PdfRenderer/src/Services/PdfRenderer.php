@@ -17,24 +17,9 @@ class PdfRenderer
      * @param array|Invoice $invoiceData
      * @return string Path to stored PDF
      */
-    public function render(array|Invoice $invoiceData): string
+    public function render(array $invoiceData): string
     {
-        // Convert Invoice DTO to array if needed
-        if ($invoiceData instanceof Invoice) {
-            $invoiceArray = [
-                'invoice_id' => $invoiceData->getInvoiceId(),
-                'customer_email' => $invoiceData->getCustomerEmail(),
-                'customer_id' => $invoiceData->getCustomerId(),
-                'file_path' => $invoiceData->getFilePath(),
-                'lines' => array_map(fn($line) => $line->toArray(), $invoiceData->getLines()),
-                'total_amount' => $invoiceData->getTotalAmount(),
-                'currency' => $invoiceData->getCurrency(),
-            ];
-        } else {
-            $invoiceArray = $invoiceData;
-        }
-        
-        $invoiceId = $invoiceArray['invoice_id'] ?? 'unknown_invoice';
+        $invoiceId = $invoiceData['invoice_id'] ?? 'unknown_invoice';
         Log::info('Starting PDF rendering.', ['invoice_id' => $invoiceId]);
 
         try {
@@ -45,7 +30,7 @@ class PdfRenderer
             }
 
             // Render the HTML from a Blade view
-            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceArray])->render();
+            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceData])->render();
             Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId]);
 
             // Create a new Dompdf instance

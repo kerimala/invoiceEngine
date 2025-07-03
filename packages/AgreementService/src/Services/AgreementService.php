@@ -21,7 +21,8 @@ class AgreementService
         // The customerId is ignored in this placeholder.
         $agreement = [
             'version' => 'v1.2',
-            'multiplier' => 1.15, // 115%
+            'multiplier' => 1.15,
+            'vat_rate' => 0.21,
             'currency' => 'EUR',
             'language' => 'en',
             'rules' => [
@@ -34,4 +35,4 @@ class AgreementService
         Log::info('Agreement found for customer.', ['customerId' => $customerId, 'agreement_version' => $agreement['version']]);
         return $agreement;
     }
-} 
+}

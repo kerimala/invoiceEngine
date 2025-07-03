@@ -22,13 +22,19 @@ class InvoiceAssembler
         
         $invoiceLines = [];
         $totalAmount = 0;
-        
+
         foreach ($lines as $lineData) {
-            $description = $lineData['product_name'] ?? $lineData['description'] ?? 'Unknown Product';
-            $quantity = $lineData['quantity'] ?? 1;
-            $unitPrice = $lineData['unit_price'] ?? 0;
-            
-            $invoiceLine = new InvoiceLine($description, $quantity, $unitPrice);
+                        $invoiceLine = new InvoiceLine(
+                $lineData['Product Name'] ?? 'Unknown Product',
+                1, // quantity
+                $lineData['line_total'],
+                $lineData['nett_total'],
+                $lineData['vat_amount'],
+                $lineData['Product Name'] ?? null,
+                $lineData['currency'] ?? 'EUR',
+                $lineData['agreement_version'] ?? '1.0',
+                $lineData['last_line'] ?? false
+            );
             $invoiceLines[] = $invoiceLine;
             $totalAmount += $invoiceLine->getTotal();
         }

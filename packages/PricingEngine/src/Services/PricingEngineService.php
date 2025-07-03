@@ -32,10 +32,19 @@ class PricingEngineService
             }
         }
         
-        $lineTotal = ($baseCharge + $surchargeTotal) * $multiplier;
-        Log::info('Line total calculated.', ['base_charge' => $baseCharge, 'surcharge_total' => $surchargeTotal, 'multiplier' => $multiplier, 'total' => $lineTotal]);
+        $nettTotal = ($baseCharge + $surchargeTotal) * $multiplier;
+        Log::info('Nett total calculated.', ['base_charge' => $baseCharge, 'surcharge_total' => $surchargeTotal, 'multiplier' => $multiplier, 'nett_total' => $nettTotal]);
+
+        $vatRate = $agreement['vat_rate'] ?? 0;
+        $vatAmount = $nettTotal * $vatRate;
+        Log::info('VAT calculated.', ['nett_total' => $nettTotal, 'vat_rate' => $vatRate, 'vat_amount' => $vatAmount]);
+
+        $lineTotal = $nettTotal + $vatAmount;
+        Log::info('Line total calculated.', ['nett_total' => $nettTotal, 'vat_amount' => $vatAmount, 'total' => $lineTotal]);
 
         $pricedLine = array_merge($parsedLine, [
+            'nett_total' => round($nettTotal, 2),
+            'vat_amount' => round($vatAmount, 2),
             'line_total' => round($lineTotal, 2),
             'agreement_version' => $agreement['version'],
             'currency' => $agreement['currency'] ?? 'EUR',
@@ -93,4 +102,4 @@ class PricingEngineService
         // Pricing logic will go here
         return 0.0;
     }
-} 
+}

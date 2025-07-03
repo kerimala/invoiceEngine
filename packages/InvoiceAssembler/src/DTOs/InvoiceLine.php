@@ -12,11 +12,15 @@ class InvoiceLine
     private string $currency;
     private string $agreementVersion;
     private bool $lastLine;
+    private float $nettTotal;
+    private float $vatAmount;
 
     public function __construct(
         string $description,
         float $quantity,
         float $unitPrice,
+        float $nettTotal,
+        float $vatAmount,
         ?string $productName = null,
         string $currency = 'USD',
         string $agreementVersion = '1.0',
@@ -25,6 +29,8 @@ class InvoiceLine
         $this->description = $description;
         $this->quantity = $quantity;
         $this->unitPrice = $unitPrice;
+        $this->nettTotal = $nettTotal;
+        $this->vatAmount = $vatAmount;
         $this->productName = $productName;
         $this->currency = $currency;
         $this->agreementVersion = $agreementVersion;
@@ -126,6 +132,8 @@ class InvoiceLine
             'product_name' => $this->getProductName(),
             'quantity' => $this->quantity,
             'unit_price' => $this->unitPrice,
+            'nett_total' => $this->nettTotal,
+            'vat_amount' => $this->vatAmount,
             'line_total' => $this->total,
             'currency' => $this->currency,
             'agreement_version' => $this->agreementVersion,

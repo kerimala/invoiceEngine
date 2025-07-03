@@ -12,8 +12,26 @@ class InvoiceAssemblerTest extends TestCase
     {
         $service = new InvoiceAssembler();
         $lines = [
-            ['product_name' => 'Test Product', 'quantity' => 1, 'unit_price' => 100, 'total' => 100],
-            ['product_name' => 'Another Product', 'quantity' => 2, 'unit_price' => 50, 'total' => 100],
+            [
+                'Product Name' => 'Test Product',
+                'description' => 'Test Product',
+                'nett_total' => 80,
+                'vat_amount' => 20,
+                'line_total' => 100,
+                'currency' => 'EUR',
+                'agreement_version' => '1.0',
+                'last_line' => false,
+            ],
+            [
+                'Product Name' => 'Another Product',
+                'description' => 'Another Product',
+                'nett_total' => 80,
+                'vat_amount' => 20,
+                'line_total' => 100,
+                'currency' => 'EUR',
+                'agreement_version' => '1.0',
+                'last_line' => true,
+            ],
         ];
 
         $invoice = $service->createInvoice($lines);
@@ -22,4 +40,4 @@ class InvoiceAssemblerTest extends TestCase
         $this->assertCount(2, $invoice->getLines());
         $this->assertEquals('Test Product', $invoice->getLines()[0]->getDescription());
     }
-} 
+}

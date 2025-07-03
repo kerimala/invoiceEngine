@@ -39,29 +39,26 @@
             <thead>
                 <tr>
                     <th>Description</th>
-                    <th class="text-right">Amount</th>
+                    <th class="text-right">Nett</th>
+                    <th class="text-right">VAT</th>
+                    <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($invoice['lines'] as $line)
                     <tr>
                         <td>
-                            Line Item (Agreement: {{ $line['agreement_version'] }})
-                            <ul>
-                                @foreach ($line as $key => $value)
-                                    @if (!in_array($key, ['line_total', 'agreement_version', 'currency', 'last_line']))
-                                        <li><strong>{{ $key }}:</strong> {{ $value }}</li>
-                                    @endif
-                                @endforeach
-                            </ul>
+                            {{ $line['description'] }}
                         </td>
+                        <td class="text-right">{{ number_format($line['nett_total'], 2) }} {{ $line['currency'] }}</td>
+                        <td class="text-right">{{ number_format($line['vat_amount'], 2) }} {{ $line['currency'] }}</td>
                         <td class="text-right">{{ number_format($line['line_total'], 2) }} {{ $line['currency'] }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
-                    <td class="text-right total">Total:</td>
+                    <td colspan="3" class="text-right total">Total:</td>
                     <td class="text-right total">{{ number_format($invoice['total_amount'], 2) }} {{ $invoice['currency'] }}</td>
                 </tr>
             </tfoot>
@@ -72,4 +69,4 @@
         </div>
     </div>
 </body>
-</html> 
+</html>

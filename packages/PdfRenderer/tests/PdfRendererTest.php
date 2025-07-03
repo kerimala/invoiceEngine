@@ -14,16 +14,25 @@ class PdfRendererTest extends TestCase
     {
         Storage::fake('local');
         $service = new PdfRenderer();
-        $lines = [
-            new InvoiceLine('Test Product', 1, 100),
+        $invoiceData = [
+            'invoice_id' => 'INV-123',
+            'customer_id' => 'test@example.com',
+            'lines' => [
+                [
+                    'description' => 'Test Product',
+                    'nett_total' => 80,
+                    'vat_amount' => 20,
+                    'line_total' => 100,
+                    'currency' => 'EUR',
+                    'agreement_version' => '1.0',
+                ]
+            ],
+            'total_amount' => 100,
+            'currency' => 'EUR',
         ];
-        $invoice = new Invoice('INV-123', 'test@example.com');
-        $invoice->setLines($lines);
-        $invoice->setTotalAmount(100);
 
+        $filePath = $service->render($invoiceData);
 
-        $filePath = $service->render($invoice);
-
-        Storage::disk('local')->assertExists($filePath);
+        $this->assertTrue(Storage::disk('local')->exists($filePath));
     }
-} 
+}

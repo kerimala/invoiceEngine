@@ -35,13 +35,16 @@ class InvoiceAssemblerService
             
             // In a real scenario, we might create a more complex Invoice object.
             // For now, we'll just use the array of lines.
+            $invoiceAssembler = new InvoiceAssembler();
+            $invoice = $invoiceAssembler->createInvoice($lines);
+
             $finalInvoiceData = [
-                'invoice_id' => 'INV-' . uniqid(),
-                'customer_id' => 'some_customer_id', // This should probably come from earlier steps
+                'invoice_id' => $invoice->getInvoiceId(),
+                'customer_id' => $invoice->getCustomerEmail(),
                 'file_path' => $originalFilePath,
-                'lines' => $lines,
-                'total_amount' => array_sum(array_column($lines, 'line_total')),
-                'currency' => $lines[0]['currency'] ?? 'EUR',
+                'lines' => array_map(fn($line) => $line->toArray(), $invoice->getLines()),
+                'total_amount' => $invoice->getTotalAmount(),
+                'currency' => $invoice->getLines()[0]->getCurrency() ?? 'EUR',
             ];
 
             Log::info('Final invoice data prepared.', ['invoice_id' => $finalInvoiceData['invoice_id']]);
@@ -55,4 +58,4 @@ class InvoiceAssemblerService
             Log::info('Cache cleared for file.', ['cacheKey' => $cacheKey]);
         }
     }
-} 
+}
