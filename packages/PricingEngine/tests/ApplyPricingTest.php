@@ -1,13 +1,13 @@
 <?php
 
-namespace Packages\PricingEngine\tests;
+namespace InvoicingEngine\PricingEngine\Tests;
 
 use Illuminate\Support\Facades\Event;
 use Packages\AgreementService\Services\AgreementService;
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
-use Packages\PricingEngine\Listeners\ApplyPricing;
-use Packages\PricingEngine\Services\PricingEngineService;
+use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
+use InvoicingEngine\PricingEngine\Listeners\ApplyPricing;
+use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use Tests\TestCase;
 
 class ApplyPricingTest extends TestCase
@@ -39,4 +39,4 @@ class ApplyPricingTest extends TestCase
             return isset($event->pricedLine['last_line']) && $event->pricedLine['last_line'] === true;
         });
     }
-} 
+}

@@ -1,12 +1,12 @@
 <?php
 
-namespace Packages\PricingEngine\Listeners;
+namespace InvoicingEngine\PricingEngine\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Packages\AgreementService\Services\AgreementService;
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
-use Packages\PricingEngine\Services\PricingEngineService;
+use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
+use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
@@ -46,4 +46,4 @@ class ApplyPricing implements ShouldQueue
         }
         Log::info('ApplyPricing listener finished.', ['filePath' => $event->filePath, 'lines_processed' => $lineCount]);
     }
-} 
+}

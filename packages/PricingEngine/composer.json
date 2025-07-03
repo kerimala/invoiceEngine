@@ -3,14 +3,14 @@
   "description": "Handles invoice pricing logic.",
   "autoload": {
     "psr-4": {
-      "Packages\\PricingEngine\\": "src/"
+      "InvoicingEngine\\PricingEngine\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "Packages\\PricingEngine\\Providers\\PricingEngineServiceProvider"
+        "InvoicingEngine\\PricingEngine\\Providers\\PricingEngineServiceProvider"
       ]
     }
   }
-} 
+}

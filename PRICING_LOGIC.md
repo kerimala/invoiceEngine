@@ -8,63 +8,64 @@ The pricing engine calculates the final price for each line item on an invoice b
 
 ## Key Components
 
-- **`AgreementService`**: This service is responsible for retrieving the correct agreement for a given customer. The agreement contains all the rules needed to price an invoice line.
-- **`PricingEngineService`**: This service contains the core logic for calculating the price of an invoice line based on the rules from the agreement.
+- **[`AgreementService`](./packages/AgreementService/src/Services/AgreementService.php)**: This service is responsible for retrieving the correct agreement for a given customer. The agreement contains all the rules needed to price an invoice line.
+- **[`PricingEngineService`](./packages/PricingEngine/src/Services/PricingEngineService.php)**: This service orchestrates the pricing process. It uses a factory to select the appropriate pricing strategy based on the customer's agreement and then delegates the calculation to that strategy.
+- **[`PricingStrategyInterface`](./packages/PricingEngine/src/Strategies/PricingStrategyInterface.php)**: This interface defines a common contract for all pricing strategies, ensuring that new strategies can be seamlessly integrated into the system.
+- **[`StandardPricingStrategy`](./packages/PricingEngine/src/Strategies/StandardPricingStrategy.php)**: This is the default pricing strategy. It calculates the price by taking a base charge and adding any surcharges, then multiplying the total by a specific value. Think of it as a simple, flat-rate calculation with a markup.
+- **[`TieredPricingStrategy`](./packages/PricingEngine/src/Strategies/TieredPricingStrategy.php)**: This strategy applies different rates based on the quantity of an item. For example, the first 10 items might be charged at one rate, the next 20 at a lower rate, and so on. It's designed for bulk discounts.
+- **[`VolumeAndDistanceStrategy`](./packages/PricingEngine/src/Strategies/VolumeAndDistanceStrategy.php)**: This strategy is used when the price depends on both the size (volume) of an item and how far it needs to go (distance). It calculates a total price by adding a base fee to charges for volume and distance. This is common in logistics and shipping.
+- **[`PricingStrategyFactory`](./packages/PricingEngine/src/Services/PricingStrategyFactory.php)**: This factory is responsible for creating an instance of the correct pricing strategy based on the `strategy` specified in the customer's agreement.
 
 ## Pricing Flow
 
 The pricing logic follows these steps:
 
-1.  **Retrieve Agreement**: The system first retrieves the customer's agreement using the `AgreementService`.
-2.  **Price Each Line**: For each line in the invoice data, the `PricingEngineService` performs the following calculations:
-    
-    a.  **Calculate Base Charge**: It identifies the base charge for the line item using the `base_charge_column` specified in the agreement rules.
-    
-    b.  **Calculate Surcharges**: It sums up all the surcharges for the line item. Surcharges are identified by a `surcharge_prefix` and `surcharge_suffix` defined in the agreement rules (e.g., columns starting with `XC` and ending with `_charge`).
-    
-    c.  **Apply Multiplier**: The sum of the base charge and surcharges is then multiplied by a `multiplier` from the agreement. This allows for applying a customer-specific markup or discount.
-        
-        ```
-        nett_total = (base_charge + surcharge_total) * multiplier
-        ```
-    
-    d.  **Calculate VAT**: The VAT is calculated by applying the `vat_rate` from the agreement to the `nett_total`.
-        
-        ```
-        vat_amount = nett_total * vat_rate
-        ```
-    
-    e.  **Calculate Line Total**: The final line total is the sum of the `nett_total` and the `vat_amount`.
-        
-        ```
-        line_total = nett_total + vat_amount
-        ```
-
-3.  **Assemble Invoice**: Once all lines are priced, the `InvoiceAssembler` service gathers all the priced lines and calculates the total amount for the invoice.
+1.  **Retrieve Agreement**: The system first retrieves the customer's agreement using the [`AgreementService`](./packages/AgreementService/src/Services/AgreementService.php).
+2.  **Select Strategy**: The [`PricingEngineService`](./packages/PricingEngine/src/Services/PricingEngineService.php) uses the [`PricingStrategyFactory`](./packages/PricingEngine/src/Services/PricingStrategyFactory.php) to create the appropriate pricing strategy based on the `strategy` field in the agreement.
+3.  **Price Each Line**: For each line in the invoice data, the selected strategy's `calculate` method is called to determine the final price.
+4.  **Assemble Invoice**: Once all lines are priced, the [`InvoiceAssembler`](./packages/InvoiceAssembler/src/Services/InvoiceAssemblerService.php) service gathers all the priced lines and calculates the total amount for the invoice.
 
 ## Agreement Structure
 
 An agreement is a simple data structure (typically an array) that contains the following information:
 
 -   `version`: The version of the agreement.
--   `multiplier`: A numeric value to be applied to the sum of the base charge and surcharges.
+-   `strategy`: The identifier for the pricing strategy to use (e.g., `standard`, `tiered`, `volume_and_distance`).
+-   `multiplier`: A numeric value used by the pricing strategy.
 -   `vat_rate`: The VAT rate to be applied (e.g., `0.21` for 21%).
 -   `currency`: The currency for the invoice (e.g., `EUR`).
--   `rules`: An array of rules for parsing the invoice data, including:
-    -   `base_charge_column`: The name of the column containing the base charge.
-    -   `surcharge_prefix`: The prefix for columns that contain surcharges.
-    -   `surcharge_suffix`: The suffix for columns that contain surcharges.
+-   `rules`: An array of rules specific to the pricing strategy. The contents of this array depend on the selected strategy:
+    -   For the `standard` strategy:
+        -   `base_charge_column`: The name of the column containing the base charge.
+        -   `surcharge_prefix`: The prefix for columns that contain surcharges.
+        -   `surcharge_suffix`: The suffix for columns that contain surcharges.
+    -   For the `tiered` strategy:
+        -   `quantity_column`: The name of the column containing the quantity.
+        -   `tiers`: An array of pricing tiers, where each tier has an `up_to` quantity and a `rate`.
+    -   For the `volume_and_distance` strategy:
+        -   `volume_column`: The name of the column containing the volume.
+        -   `distance_column`: The name of the column containing the distance.
+        -   `base_rate`: A flat base rate for the service.
+        -   `volume_rate`: The rate to charge per unit of volume.
+        -   `distance_rate`: The rate to charge per unit of distance.
 
 ## Visualization
 
 ```mermaid
 graph TD
-    A[Invoice Data] --> B{PricingEngineService};
-    C[Agreement] --> B;
-    B --> D{Calculate Nett Total};
-    D --> E{Calculate VAT};
-    E --> F{Calculate Line Total};
-    F --> G[Priced Invoice Line];
-    G --> H{InvoiceAssembler};
-    H --> I[Final Invoice];
+    subgraph Pricing
+        A[Invoice Data] --> B{PricingEngineService};
+        C[Agreement] --> B;
+        B --> D{PricingStrategyFactory};
+        D -- Creates --> E[PricingStrategy];
+        B -- Uses --> E;
+        A --> E;
+        C --> E;
+        E --> F[Priced Invoice Line];
+    end
+
+    subgraph Assembly
+        F --> G{InvoiceAssembler};
+        G --> H[Final Invoice];
+    end
 ```

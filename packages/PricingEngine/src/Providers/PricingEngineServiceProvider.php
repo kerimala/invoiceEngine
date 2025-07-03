@@ -1,11 +1,11 @@
 <?php
 
-namespace Packages\PricingEngine\Providers;
+namespace InvoicingEngine\PricingEngine\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
-use Packages\PricingEngine\Listeners\ApplyPricing;
-use Packages\PricingEngine\Services\PricingEngineService;
+use InvoicingEngine\InvoiceParser\Events\CarrierInvoiceLineExtracted;
+use InvoicingEngine\PricingEngine\Listeners\ApplyPricing;
+use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use Illuminate\Support\Facades\Event;
 
 class PricingEngineServiceProvider extends ServiceProvider
@@ -19,4 +19,4 @@ class PricingEngineServiceProvider extends ServiceProvider
         // Register the listener
         Event::listen(CarrierInvoiceLineExtracted::class, ApplyPricing::class);
     }
-} 
+}

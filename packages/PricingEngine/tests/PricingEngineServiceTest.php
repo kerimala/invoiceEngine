@@ -1,9 +1,9 @@
 <?php
 
-namespace Packages\PricingEngine\tests;
+namespace InvoicingEngine\PricingEngine\Tests;
 
 use Tests\TestCase;
-use Packages\PricingEngine\Services\PricingEngineService;
+use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use InvalidArgumentException;
 
 class PricingEngineServiceTest extends TestCase
@@ -41,6 +41,7 @@ class PricingEngineServiceTest extends TestCase
     {
         return [
             'version' => 'v1.2',
+            'strategy' => 'standard',
             'multiplier' => 1.15,
             'currency' => 'EUR',
             'rules' => [

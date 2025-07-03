@@ -1,6 +1,6 @@
 <?php
 
-namespace Packages\PricingEngine\Events;
+namespace InvoicingEngine\PricingEngine\Events;
 
 use Spatie\EventSourcing\StoredEvents\ShouldBeStored;
 
@@ -18,4 +18,4 @@ class PricedInvoiceLine extends ShouldBeStored
         $this->line_total = $pricedLine['line_total'] ?? 0;
         $this->filePath = $filePath;
     }
-} 
+}
