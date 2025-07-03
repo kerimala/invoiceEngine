@@ -37,12 +37,9 @@ class ListenerTest extends TestCase
         // Replace the service in the container with our mock
         $this->app->instance(InvoiceParserService::class, $mockParserService);
 
-        // Manually register a listener for the event
-        Event::listen(FileStored::class, ParseInvoiceFile::class);
-
-        // Dispatch the event
-        Event::dispatch(new FileStored($filePath, 12345));
+        // Dispatch the event (listener is already registered by service provider)
+        Event::dispatch(new FileStored($filePath, 12345, []));
 
         $this->assertTrue(true);
     }
-} 
+}

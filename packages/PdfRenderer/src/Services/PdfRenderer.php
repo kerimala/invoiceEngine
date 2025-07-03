@@ -7,18 +7,34 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Packages\InvoiceAssembler\DTOs\Invoice;
 
 class PdfRenderer
 {
     /**
      * Render invoice data to a PDF and store it.
      *
-     * @param array $invoiceData
+     * @param array|Invoice $invoiceData
      * @return string Path to stored PDF
      */
-    public function render(array $invoiceData): string
+    public function render(array|Invoice $invoiceData): string
     {
-        $invoiceId = $invoiceData['invoice_id'] ?? 'unknown_invoice';
+        // Convert Invoice DTO to array if needed
+        if ($invoiceData instanceof Invoice) {
+            $invoiceArray = [
+                'invoice_id' => $invoiceData->getInvoiceId(),
+                'customer_email' => $invoiceData->getCustomerEmail(),
+                'customer_id' => $invoiceData->getCustomerId(),
+                'file_path' => $invoiceData->getFilePath(),
+                'lines' => array_map(fn($line) => $line->toArray(), $invoiceData->getLines()),
+                'total_amount' => $invoiceData->getTotalAmount(),
+                'currency' => $invoiceData->getCurrency(),
+            ];
+        } else {
+            $invoiceArray = $invoiceData;
+        }
+        
+        $invoiceId = $invoiceArray['invoice_id'] ?? 'unknown_invoice';
         Log::info('Starting PDF rendering.', ['invoice_id' => $invoiceId]);
 
         try {
@@ -29,7 +45,7 @@ class PdfRenderer
             }
 
             // Render the HTML from a Blade view
-            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceData])->render();
+            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceArray])->render();
             Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId]);
 
             // Create a new Dompdf instance
@@ -67,7 +83,7 @@ class PdfRenderer
             $fullPath = Storage::disk('local')->path($filename);
             Log::info('PDF successfully rendered and stored.', ['invoice_id' => $invoiceId, 'path' => $fullPath]);
             
-            return $fullPath;
+            return $filename;
 
         } catch (\Throwable $th) {
             Log::error('Error during PDF rendering.', [

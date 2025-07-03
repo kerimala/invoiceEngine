@@ -28,7 +28,7 @@ class InvoiceMail extends Mailable
     {
 
         return $this
-            ->subject('Invoice #' . $this->invoice->getId())
+            ->subject('Invoice #' . $this->invoice->getInvoiceId())
             ->view('emails.invoice')
             ->with(['invoice' => $this->invoice])
             ->attach(

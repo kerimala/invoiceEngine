@@ -80,16 +80,18 @@ class InvoiceFileIngestService
         // Accept files with leading dot in name
         // (already handled by basename/extension logic)
         // Emit event with file path, size, and custom metadata
-        $eventData = array_merge([
+        $fileSize = filesize($filePath);
+        $eventData = [
             'filePath' => $filePath,
-            'size' => filesize($filePath),
-        ], $metadata);
+            'size' => $fileSize,
+            'metadata' => $metadata,
+        ];
 
         Log::info('Dispatching FileStored event for: ' . $filePath, $eventData);
 
         // Dispatch an event
-        Event::dispatch(new FileStored(...$eventData));
+        Event::dispatch(new FileStored($filePath, $fileSize, $metadata));
 
         Log::info('File ingestion process finished for: ' . $filePath);
     }
-} 
+}

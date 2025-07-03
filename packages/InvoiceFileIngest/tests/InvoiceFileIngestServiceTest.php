@@ -190,7 +190,7 @@ class InvoiceFileIngestServiceTest extends TestCase
         // Assume ingest can take optional metadata
         $service->ingest($filePath, ['source' => 'test']);
         Event::assertDispatched(FileStored::class, function ($event) use ($filePath) {
-            return $event->filePath === $filePath && isset($event->source) && $event->source === 'test';
+            return $event->filePath === $filePath && isset($event->metadata['source']) && $event->metadata['source'] === 'test';
         });
     }
 
@@ -250,4 +250,4 @@ class InvoiceFileIngestServiceTest extends TestCase
             return $event->filePath === $filePath;
         });
     }
-} 
+}
