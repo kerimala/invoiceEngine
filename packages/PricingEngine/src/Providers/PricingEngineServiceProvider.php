@@ -3,10 +3,7 @@
 namespace InvoicingEngine\PricingEngine\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use InvoicingEngine\InvoiceParser\Events\CarrierInvoiceLineExtracted;
-use InvoicingEngine\PricingEngine\Listeners\ApplyPricing;
 use InvoicingEngine\PricingEngine\Services\PricingEngineService;
-use Illuminate\Support\Facades\Event;
 
 class PricingEngineServiceProvider extends ServiceProvider
 {
@@ -16,7 +13,7 @@ class PricingEngineServiceProvider extends ServiceProvider
             return new PricingEngineService();
         });
 
-        // Register the listener
-        Event::listen(CarrierInvoiceLineExtracted::class, ApplyPricing::class);
+        // Event listener is registered in EventServiceProvider
+        // Removed duplicate registration
     }
 }

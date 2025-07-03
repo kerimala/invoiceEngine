@@ -35,7 +35,7 @@ class PdfRenderer
 
             // Create a new Dompdf instance
             $options = new Options();
-            $options->set('isRemoteEnabled', false);
+            $options->set('isRemoteEnabled', true);
             $options->set('tempDir', storage_path('app/temp')); // ensure temp dir exists
             $dompdf = new Dompdf($options);
 

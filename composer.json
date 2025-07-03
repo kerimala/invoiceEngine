@@ -50,7 +50,8 @@
             "Packages\\PdfRenderer\\": "packages/PdfRenderer/src/",
             "Packages\\InvoiceSender\\": "packages/InvoiceSender/src/",
             "Packages\\AgreementService\\": "packages/AgreementService/src/",
-            "Packages\\InvoiceSender\\Mail\\": "packages/InvoiceSender/Mail/"
+            "Packages\\InvoiceSender\\Mail\\": "packages/InvoiceSender/Mail/",
+            "InvoicingEngine\\PricingEngine\\": "packages/PricingEngine/src/"
         }
     },
     "autoload-dev": {

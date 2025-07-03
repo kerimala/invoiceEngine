@@ -3,10 +3,7 @@
 namespace Packages\InvoiceAssembler\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Packages\InvoiceAssembler\Listeners\AssembleInvoice;
 use Packages\InvoiceAssembler\Services\InvoiceAssemblerService;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
-use Illuminate\Support\Facades\Event;
 
 class InvoiceAssemblerServiceProvider extends ServiceProvider
 {
@@ -16,6 +13,7 @@ class InvoiceAssemblerServiceProvider extends ServiceProvider
             return new InvoiceAssemblerService();
         });
 
-        Event::listen(PricedInvoiceLine::class, AssembleInvoice::class);
+        // Event listener is registered in EventServiceProvider
+        // Removed duplicate registration
     }
-} 
+}

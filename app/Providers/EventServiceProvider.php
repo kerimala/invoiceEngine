@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Event;
 use Packages\InvoiceFileIngest\Events\FileStored;
 use Packages\InvoiceParser\Listeners\ParseInvoiceFile;
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
-use Packages\PricingEngine\Listeners\ApplyPricing;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
+use InvoicingEngine\PricingEngine\Listeners\ApplyPricing;
+use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
 use Packages\InvoiceAssembler\Listeners\AssembleInvoice;
 use Packages\InvoiceAssembler\Events\InvoiceAssembled;
-use Packages\PdfRenderer\Listeners\RenderPdf;
+use Packages\PdfRenderer\Listeners\RenderInvoice;
 use Packages\PdfRenderer\Events\PdfRendered;
 use Packages\InvoiceSender\Listeners\SendInvoice;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -33,7 +33,7 @@ class EventServiceProvider extends ServiceProvider
             AssembleInvoice::class,
         ],
         InvoiceAssembled::class => [
-            RenderPdf::class,
+            RenderInvoice::class,
         ],
         PdfRendered::class => [
             SendInvoice::class,
@@ -47,4 +47,4 @@ class EventServiceProvider extends ServiceProvider
     {
         //
     }
-} 
+}

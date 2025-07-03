@@ -5,6 +5,7 @@ namespace Packages\PdfRenderer\Listeners;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Packages\InvoiceAssembler\Events\InvoiceAssembled;
+use Packages\PdfRenderer\Events\PdfRendered;
 use Packages\PdfRenderer\Services\PdfRenderer;
 
 class RenderInvoice implements ShouldQueue
@@ -17,7 +18,8 @@ class RenderInvoice implements ShouldQueue
     {
         Log::info('RenderInvoice listener received InvoiceAssembled event.', ['invoice_id' => $event->invoiceData['invoice_id']]);
         try {
-            $this->pdfRenderer->render($event->invoiceData);
+            $pdfPath = $this->pdfRenderer->render($event->invoiceData);
+            event(new PdfRendered($pdfPath, $event->invoiceData));
         } catch (\Throwable $e) {
             Log::critical('PDF rendering failed and exception was caught in the listener.', [
                 'invoice_id' => $event->invoiceData['invoice_id'],
@@ -26,4 +28,4 @@ class RenderInvoice implements ShouldQueue
             // Optionally, re-throw or handle the failure (e.g., dispatch a failed event)
         }
     }
-} 
+}

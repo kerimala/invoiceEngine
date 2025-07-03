@@ -2,10 +2,7 @@
 
 namespace Packages\PdfRenderer\Providers;
 
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Packages\InvoiceAssembler\Events\InvoiceAssembled;
-use Packages\PdfRenderer\Listeners\RenderInvoice;
 use Packages\PdfRenderer\Services\PdfRenderer;
 
 class PdfRendererServiceProvider extends ServiceProvider
@@ -21,11 +18,8 @@ class PdfRendererServiceProvider extends ServiceProvider
             return new PdfRenderer();
         });
 
-        // Register the event listener
-        Event::listen(
-            InvoiceAssembled::class,
-            RenderInvoice::class
-        );
+        // Event listener is registered in EventServiceProvider
+        // Removed duplicate registration
 
         // Register the view namespace
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'pdf-renderer');
@@ -40,4 +34,4 @@ class PdfRendererServiceProvider extends ServiceProvider
     {
         //
     }
-} 
+}

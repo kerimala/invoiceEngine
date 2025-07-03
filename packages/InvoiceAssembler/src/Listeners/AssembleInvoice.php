@@ -5,7 +5,7 @@ namespace Packages\InvoiceAssembler\Listeners;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Packages\InvoiceAssembler\Services\InvoiceAssemblerService;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
+use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
 
 class AssembleInvoice implements ShouldQueue
 {
@@ -18,4 +18,4 @@ class AssembleInvoice implements ShouldQueue
         Log::info('AssembleInvoice listener received a PricedInvoiceLine event.', ['filePath' => $event->filePath]);
         $this->invoiceAssemblerService->assemble($event->pricedLine, $event->filePath);
     }
-} 
+}
