@@ -40,7 +40,8 @@ class InvoiceAssemblerService
 
             $finalInvoiceData = [
                 'invoice_id' => $invoice->getInvoiceId(),
-                'customer_id' => $invoice->getCustomerEmail(),
+                'customer_id' => $invoice->getCustomerId(),
+                'customer_email' => $invoice->getCustomerEmail(),
                 'file_path' => $originalFilePath,
                 'lines' => array_map(fn($line) => $line->toArray(), $invoice->getLines()),
                 'total_amount' => $invoice->getTotalAmount(),

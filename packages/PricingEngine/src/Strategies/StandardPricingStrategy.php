@@ -18,7 +18,7 @@ class StandardPricingStrategy implements PricingStrategyInterface
      */
     public function calculate(array $invoiceLine, array $agreement): array
     {
-        Log::info('StandardPricingStrategy: Received data for calculation.', ['invoice_line' => $invoiceLine, 'agreement' => $agreement]);
+
         $multiplier = $agreement['multiplier'] ?? 1;
 
         $baseCharge = (float) ($invoiceLine['Weight Charge'] ?? 0);

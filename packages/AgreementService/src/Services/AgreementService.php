@@ -17,11 +17,16 @@ class AgreementService
         $agreementType = 'custom';
 
         if (!$agreement) {
+            Log::info('No custom agreement found, falling back to standard agreement.', ['customerId' => $customerId]);
             $agreement = Agreement::where('customer_id', 'standard')
                 ->where('valid_from', '<=', now())
                 ->orderBy('valid_from', 'desc')
                 ->first();
             $agreementType = 'standard';
+
+            if (!$agreement) {
+                Log::error('No standard agreement found.', ['customerId' => $customerId]);
+            }
         }
 
         if (!$agreement) {

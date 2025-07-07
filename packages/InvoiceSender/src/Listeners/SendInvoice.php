@@ -26,7 +26,7 @@ class SendInvoice implements ShouldQueue
         ]);
         
         // Reconstruct Invoice DTO from array data
-        $invoice = new Invoice($event->invoiceData['invoice_id'], $event->invoiceData['customer_id']);
+        $invoice = new Invoice($event->invoiceData['invoice_id'], $event->invoiceData['customer_email']);
         $invoice->setTotalAmount($event->invoiceData['total_amount']);
         $invoice->setCurrency($event->invoiceData['currency']);
         $invoice->setFilePath($event->invoiceData['file_path']);

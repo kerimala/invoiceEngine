@@ -19,6 +19,10 @@ class RenderInvoice implements ShouldQueue
         Log::info('RenderInvoice listener received InvoiceAssembled event.', ['invoice_id' => $event->invoiceData['invoice_id']]);
         try {
             $pdfPath = $this->pdfRenderer->render($event->invoiceData);
+            Log::info('RenderInvoice: pdfPath debug', [
+                'pdfPath_type' => gettype($pdfPath),
+                'pdfPath_value' => $pdfPath,
+            ]);
             event(new PdfRendered($pdfPath, $event->invoiceData));
         } catch (\Throwable $e) {
             Log::critical('PDF rendering failed and exception was caught in the listener.', [

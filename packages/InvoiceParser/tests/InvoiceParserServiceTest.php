@@ -120,6 +120,28 @@ class InvoiceParserServiceTest extends TestCase
         file_put_contents($filePath, 'dummy');
         $service->parse($filePath);
     }
+
+    public function test_parses_xlsx_with_pricing_data_and_emits_event()
+    {
+        Event::fake();
+        $service = new InvoiceParserService();
+        $data = [
+            ['Billing Account', 'Weight Charge', 'Fuel Charge'],
+            ['customer1', '100', '10'],
+            ['customer2', '200', '20'],
+        ];
+        $filePath = $this->createSpreadsheetFile('invoice_with_pricing.xlsx', $data);
+
+        $service->parse($filePath);
+
+        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) use ($filePath) {
+            return $event->filePath === $filePath
+                && $event->lineCount === 2
+                && $event->parsedLines[0]['Billing Account'] === 'customer1'
+                && $event->parsedLines[0]['Weight Charge'] === '100'
+                && $event->parsedLines[0]['Fuel Charge'] === '10';
+        });
+    }
     
     public function test_throws_for_malformed_xml()
     {
@@ -138,4 +160,4 @@ class InvoiceParserServiceTest extends TestCase
         file_put_contents($filePath, '');
         $service->parse($filePath);
     }
-} 
+}

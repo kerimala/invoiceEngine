@@ -13,6 +13,7 @@ class AgreementSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('agreements')->truncate();
         DB::table('agreements')->insert([
             [
                 'customer_id' => 'standard',

@@ -2,6 +2,7 @@
 
 namespace InvoicingEngine\PricingEngine\Services;
 
+use App\Models\EnrichedInvoiceLine;
 use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
@@ -16,6 +17,20 @@ class PricingEngineService
 
         $strategy = PricingStrategyFactory::create($agreement);
         $pricedLine = $strategy->calculate($parsedLine, $agreement);
+
+        EnrichedInvoiceLine::create([
+            'raw_line' => $parsedLine,
+            'nett_total' => $pricedLine['nett_total'],
+            'vat_amount' => $pricedLine['vat_amount'],
+            'line_total' => $pricedLine['line_total'],
+            'currency' => $pricedLine['currency'],
+            'agreement_version' => $agreement['version'],
+            'agreement_type' => $agreement['agreement_type'],
+            'pricing_strategy' => $agreement['strategy'],
+            'processing_metadata' => [
+                'priced_at' => now()->toDateTimeString(),
+            ],
+        ]);
 
         Log::info('Line priced successfully.', ['priced_line' => $pricedLine]);
         return $pricedLine;

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use InvalidArgumentException;
+use App\Models\EnrichedInvoiceLine;
 
 class PricingEngineServiceTest extends TestCase
 {
@@ -46,6 +47,7 @@ class PricingEngineServiceTest extends TestCase
             'strategy' => 'standard',
             'multiplier' => 1.15,
             'currency' => 'EUR',
+            'agreement_type' => 'custom',
             'rules' => [
                 'base_charge_column' => 'Weight Charge',
                 'surcharge_prefix' => 'XC',
@@ -95,6 +97,22 @@ class PricingEngineServiceTest extends TestCase
         $this->assertEquals(round($expectedNettTotal, 2), $pricedLine['nett_total']);
         $this->assertEquals(round($expectedVatAmount, 2), $pricedLine['vat_amount']);
         $this->assertEquals(round($expectedTotal, 2), $pricedLine['line_total']);
+    }
+
+    public function test_it_stores_an_enriched_invoice_line()
+    {
+        $parsedLine = $this->getSampleParsedLine();
+        $agreement = $this->getSampleAgreement();
+        $agreement['vat_rate'] = 0.21;
+
+        $this->service->priceLine($parsedLine, $agreement);
+
+        $this->assertDatabaseHas('enriched_invoice_lines', [
+            'raw_line' => json_encode($parsedLine),
+            'agreement_version' => 'v1.2',
+            'agreement_type' => 'custom',
+            'pricing_strategy' => 'standard',
+        ]);
     }
 
     public function test_it_throws_an_exception_if_agreement_is_invalid()

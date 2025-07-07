@@ -70,6 +70,14 @@ class InvoiceParserService
                     continue;
                 }
 
+                $header = array_map('trim', $header);
+                $lineData = array_map('trim', $lineData);
+
+                if (count($header) !== count($lineData)) {
+                    Log::error('InvoiceParserService: Header and line data count mismatch', ['header' => $header, 'lineData' => $lineData]);
+                    continue;
+                }
+
                 $combinedData = array_combine($header, $lineData);
                 Log::info('InvoiceParserService: Combined Data', ['combined_data' => $combinedData]);
                 $parsedLines[] = $combinedData;

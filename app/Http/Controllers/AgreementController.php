@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Packages\AgreementService\Services\AgreementService;
+use App\Models\Agreement;
 
 class AgreementController extends Controller
 {
+    public function index()
+    {
+        $agreements = Agreement::all();
+        return view('agreement.index', ['agreements' => $agreements]);
+    }
+
     public function store(Request $request, AgreementService $agreementService)
     {
         $data = $request->validate([
