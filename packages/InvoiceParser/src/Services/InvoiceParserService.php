@@ -4,6 +4,8 @@ namespace Packages\InvoiceParser\Services;
 
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
 use Illuminate\Support\Facades\Event;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceParserService
 {
@@ -15,67 +17,82 @@ class InvoiceParserService
      */
     public function parse(string $filePath)
     {
+        Log::info('Starting invoice parsing for file: ' . $filePath);
+
         if (!file_exists($filePath)) {
+            Log::error('File not found during parsing: ' . $filePath);
             throw new \Exception('Invoice file not found at path: ' . $filePath);
         }
         if (!is_file($filePath)) {
+            Log::error('Path is not a file during parsing: ' . $filePath);
             throw new \Exception('Path is not a valid file: ' . $filePath);
         }
         if (!is_readable($filePath)) {
+            Log::error('File not readable during parsing: ' . $filePath);
             throw new \Exception('File is not readable: ' . $filePath);
         }
         if (filesize($filePath) === 0) {
+            Log::error('File is empty during parsing: ' . $filePath);
             throw new \Exception('File is empty: ' . $filePath);
         }
         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        if (!in_array($ext, ['csv', 'xml'])) {
+        if (!in_array($ext, ['csv', 'xml', 'txt', 'xlsx'])) {
+            Log::error('Unsupported file format during parsing: ' . $ext, ['filePath' => $filePath]);
             throw new \Exception('Unsupported file format: ' . $ext);
         }
-        if ($ext === 'csv') {
-            $handle = fopen($filePath, 'r');
-            if (!$handle) {
-                throw new \Exception('Failed to open CSV file: ' . $filePath);
-            }
-            // Read the first line, strip BOM if present, and parse as CSV for the header
-            $firstLine = fgets($handle);
-            if ($firstLine === false) {
-                fclose($handle);
-                throw new \Exception('Failed to read CSV file: ' . $filePath);
-            }
-            $firstLine = preg_replace('/^\xEF\xBB\xBF/', '', $firstLine);
-            $header = str_getcsv($firstLine);
-            $header = array_map('trim', $header);
-            // Case-insensitive headers
-            $headerLower = array_map('strtolower', $header);
-            if (!in_array('header1', $headerLower) || !in_array('header2', $headerLower)) {
-                fclose($handle);
-                throw new \Exception('Missing required header(s) in CSV: ' . $filePath);
-            }
+
+        Log::info('File validation passed in InvoiceParserService. Starting parsing.', ['filePath' => $filePath, 'extension' => $ext]);
+
+        if ($ext === 'csv' || $ext === 'xlsx' || $ext === 'txt') {
+            $spreadsheet = IOFactory::load($filePath);
+            $worksheet = $spreadsheet->getActiveSheet();
+            $header = [];
             $parsedLines = [];
-            while (($row = fgetcsv($handle)) !== false) {
-                if (count($row) < 2) {
-                    continue; // skip malformed or empty lines
+            foreach ($worksheet->getRowIterator() as $row) {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(FALSE);
+                $lineData = [];
+                foreach ($cellIterator as $cell) {
+                    $lineData[] = $cell->getValue();
                 }
-                $rowAssoc = [];
-                foreach ($header as $j => $h) {
-                    if (isset($row[$j])) {
-                        $rowAssoc[$h] = $row[$j];
-                    }
+
+                if (empty($header)) {
+                    $header = $lineData;
+                    Log::info('InvoiceParserService: Header found', ['header' => $header, 'filePath' => $filePath]);
+                    continue;
                 }
-                $parsedLines[] = $rowAssoc;
+
+                Log::info('InvoiceParserService: Processing line', ['line_data' => $lineData, 'filePath' => $filePath]);
+                
+                // Skip empty rows
+                if (count(array_filter($lineData)) == 0) {
+                    Log::warning('InvoiceParserService: Skipping empty row.', ['filePath' => $filePath]);
+                    continue;
+                }
+
+                $parsedLines[] = array_combine($header, $lineData);
+                Log::info('InvoiceParserService: Line parsed', ['parsed_line' => end($parsedLines), 'filePath' => $filePath]);
             }
-            fclose($handle);
+
             if (count($parsedLines) === 0) {
-                throw new \Exception('No data lines found in CSV: ' . $filePath);
+                Log::error('No data lines found in file: ' . $filePath);
+                throw new \Exception('No data lines found in file: ' . $filePath);
             }
+            Log::info('InvoiceParserService: Dispatching CarrierInvoiceLineExtracted event', ['file_path' => $filePath, 'line_count' => count($parsedLines)]);
             Event::dispatch(new CarrierInvoiceLineExtracted($filePath, count($parsedLines), $parsedLines));
+            Log::info('InvoiceParserService: Finished parsing and dispatched event.', ['filePath' => $filePath]);
+
         } elseif ($ext === 'xml') {
+            Log::info('InvoiceParserService: Starting XML parsing.', ['filePath' => $filePath]);
             $xmlContent = file_get_contents($filePath);
             // Handle BOM
             $xmlContent = preg_replace('/^\xEF\xBB\xBF/', '', $xmlContent);
             libxml_use_internal_errors(true);
             $xml = simplexml_load_string($xmlContent);
             if ($xml === false) {
+                $errors = libxml_get_errors();
+                Log::error('Malformed XML in file: ' . $filePath, ['errors' => $errors]);
+                libxml_clear_errors();
                 throw new \Exception('Malformed XML: ' . $filePath);
             }
             $parsedLines = [];
@@ -85,11 +102,15 @@ class InvoiceParserService
                     $row[(string)$k] = (string)$v;
                 }
                 $parsedLines[] = $row;
+                Log::info('InvoiceParserService: Parsed XML line.', ['line' => $row, 'filePath' => $filePath]);
             }
             if (count($parsedLines) === 0) {
+                Log::error('No <line> elements found in XML: ' . $filePath);
                 throw new \Exception('No <line> elements found in XML: ' . $filePath);
             }
+            Log::info('InvoiceParserService: Dispatching CarrierInvoiceLineExtracted event for XML.', ['file_path' => $filePath, 'line_count' => count($parsedLines)]);
             Event::dispatch(new CarrierInvoiceLineExtracted($filePath, count($parsedLines), $parsedLines));
+            Log::info('InvoiceParserService: Finished parsing XML and dispatched event.', ['filePath' => $filePath]);
         }
     }
 } 

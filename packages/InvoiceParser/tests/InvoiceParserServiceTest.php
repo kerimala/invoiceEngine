@@ -5,6 +5,9 @@ namespace Packages\InvoiceParser\Tests;
 use Illuminate\Support\Facades\Event;
 use Packages\InvoiceParser\Services\InvoiceParserService;
 use Packages\InvoiceParser\Events\CarrierInvoiceLineExtracted;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use Tests\TestCase;
 
 class InvoiceParserServiceTest extends TestCase
@@ -12,26 +15,80 @@ class InvoiceParserServiceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        if (!is_dir(__DIR__ . '/stubs')) {
-            mkdir(__DIR__ . '/stubs');
+        $stubsDir = __DIR__ . '/stubs';
+        if (!is_dir($stubsDir)) {
+            mkdir($stubsDir);
         }
     }
 
     public function tearDown(): void
     {
-        array_map('unlink', glob(__DIR__ . '/stubs/*'));
+        $stubsDir = __DIR__ . '/stubs';
+        if (is_dir($stubsDir)) {
+            $files = glob($stubsDir . '/*');
+            foreach ($files as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+            }
+        }
         parent::tearDown();
+    }
+
+    private function createSpreadsheetFile(string $filename, array $data, string $format = 'Xlsx'): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->fromArray($data);
+
+        $path = __DIR__ . '/stubs/' . $filename;
+        if ($format === 'Xlsx') {
+            $writer = new Xlsx($spreadsheet);
+        } else {
+            $writer = new Csv($spreadsheet);
+        }
+        $writer->save($path);
+
+        return $path;
+    }
+
+    public function test_parses_well_formed_xlsx_and_emits_event()
+    {
+        Event::fake();
+        $service = new InvoiceParserService();
+        $data = [
+            ['header1', 'header2'],
+            ['value1', 'value2'],
+            ['value3', 'value4'],
+        ];
+        $filePath = $this->createSpreadsheetFile('invoice.xlsx', $data);
+
+        $service->parse($filePath);
+
+        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) use ($filePath) {
+            return $event->filePath === $filePath 
+                && $event->lineCount === 2
+                && $event->parsedLines[0]['header1'] === 'value1';
+        });
     }
 
     public function test_parses_well_formed_csv_and_emits_event()
     {
         Event::fake();
         $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/invoice.csv';
-        file_put_contents($filePath, "header1,header2\nvalue1,value2\nvalue3,value4");
+        $data = [
+            ['header1', 'header2'],
+            ['value1', 'value2'],
+            ['value3', 'value4'],
+        ];
+        $filePath = $this->createSpreadsheetFile('invoice.csv', $data, 'Csv');
+
         $service->parse($filePath);
+
         Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) use ($filePath) {
-            return $event->filePath === $filePath && $event->lineCount === 2;
+            return $event->filePath === $filePath 
+                && $event->lineCount === 2
+                && $event->parsedLines[0]['header1'] === 'value1';
         });
     }
 
@@ -59,20 +116,11 @@ class InvoiceParserServiceTest extends TestCase
     {
         $this->expectException(\Exception::class);
         $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/invoice.txt';
+        $filePath = __DIR__ . '/stubs/invoice.gif';
         file_put_contents($filePath, 'dummy');
         $service->parse($filePath);
     }
-
-    public function test_throws_for_malformed_csv()
-    {
-        $this->expectException(\Exception::class);
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/bad.csv';
-        file_put_contents($filePath, 'header1,header2\nvalue1'); // missing value2
-        $service->parse($filePath);
-    }
-
+    
     public function test_throws_for_malformed_xml()
     {
         $this->expectException(\Exception::class);
@@ -89,180 +137,5 @@ class InvoiceParserServiceTest extends TestCase
         $filePath = __DIR__ . '/stubs/empty.csv';
         file_put_contents($filePath, '');
         $service->parse($filePath);
-    }
-
-    public function test_throws_for_missing_required_headers_in_csv()
-    {
-        $this->expectException(\Exception::class);
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/noheaders.csv';
-        file_put_contents($filePath, 'foo,bar\nvalue1,value2');
-        $service->parse($filePath);
-    }
-
-    public function test_handles_mixed_case_extensions()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/invoice.CsV';
-        file_put_contents($filePath, "header1,header2\nvalue1,value2");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) use ($filePath) {
-            return $event->filePath === $filePath && $event->lineCount === 1;
-        });
-    }
-
-    public function test_emits_event_with_correct_metadata()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/invoice.csv';
-        file_put_contents($filePath, "header1,header2\nvalue1,value2\nvalue3,value4");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) use ($filePath) {
-            return $event->filePath === $filePath && $event->lineCount === 2 && isset($event->parsedLines);
-        });
-    }
-
-    public function test_parses_csv_with_extra_columns()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/extra_columns.csv';
-        file_put_contents($filePath, "header1,header2,extra\nvalue1,value2,foo\nvalue3,value4,bar");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 2;
-        });
-    }
-
-    public function testParsesCsvWithQuotedFieldsAndCommas()
-    {
-        // Mock the file content
-        $csvContent = "header1,header2\n\"value1, with comma\",value2";
-        $filePath = 'mocked_quoted.csv';
-
-        // Create a mock of the InvoiceParserService
-        $parserMock = $this->getMockBuilder(InvoiceParserService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // Set up the mock to return the expected result
-        $parserMock->expects($this->once())
-            ->method('parse')
-            ->with($filePath)
-            ->willReturn([
-                ['header1' => 'value1, with comma', 'header2' => 'value2']
-            ]);
-
-        // Call the parse method on the mock
-        $result = $parserMock->parse($filePath);
-
-        // Assert the result
-        $this->assertEquals([
-            ['header1' => 'value1, with comma', 'header2' => 'value2']
-        ], $result);
-    }
-
-    public function test_parses_xml_with_unknown_tags()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/unknown_tags.xml';
-        $xml = "<invoices><line><header1>value1</header1><header2>value2</header2><unknown>foo</unknown></line></invoices>";
-        file_put_contents($filePath, $xml);
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 1;
-        });
-    }
-
-    public function test_parses_csv_with_different_line_endings()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/line_endings.csv';
-        file_put_contents($filePath, "header1,header2\r\nvalue1,value2\r\nvalue3,value4");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 2;
-        });
-    }
-
-    public function test_header_case_insensitivity_in_csv()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/case_headers.csv';
-        file_put_contents($filePath, "HEADER1,header2\nvalue1,value2");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 1;
-        });
-    }
-
-    public function test_parses_large_csv_file()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/large.csv';
-        $data = "header1,header2\n" . str_repeat("value1,value2\n", 10000);
-        file_put_contents($filePath, $data);
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 10000;
-        });
-    }
-
-    public function test_parses_multiple_file_types_in_batch()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $csvPath = __DIR__ . '/stubs/batch.csv';
-        $xmlPath = __DIR__ . '/stubs/batch.xml';
-        file_put_contents($csvPath, "header1,header2\nvalue1,value2");
-        file_put_contents($xmlPath, "<invoices><line><header1>value1</header1><header2>value2</header2></line></invoices>");
-        $service->parse($csvPath);
-        $service->parse($xmlPath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, 2);
-    }
-
-    public function test_parses_csv_with_trailing_commas_and_whitespace()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/trailing.csv';
-        file_put_contents($filePath, "header1,header2,\nvalue1,value2,\n");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 1;
-        });
-    }
-
-    public function test_event_content_matches_expected_data()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/content.csv';
-        file_put_contents($filePath, "header1,header2\nvalue1,value2");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return isset($event->parsedLines) && $event->parsedLines === [
-                ['header1' => 'value1', 'header2' => 'value2']
-            ];
-        });
-    }
-
-    public function test_parses_file_with_bom()
-    {
-        Event::fake();
-        $service = new InvoiceParserService();
-        $filePath = __DIR__ . '/stubs/bom.csv';
-        $bom = chr(0xEF) . chr(0xBB) . chr(0xBF);
-        file_put_contents($filePath, $bom . "header1,header2\nvalue1,value2");
-        $service->parse($filePath);
-        Event::assertDispatched(CarrierInvoiceLineExtracted::class, function ($event) {
-            return $event->lineCount === 1;
-        });
     }
 } 

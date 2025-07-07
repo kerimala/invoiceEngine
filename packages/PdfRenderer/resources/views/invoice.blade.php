@@ -4,29 +4,72 @@
     <title>Invoice</title>
     <style>
         body { font-family: sans-serif; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
+        .container { width: 90%; margin: auto; }
+        .header, .footer { text-align: center; }
+        .header h1 { margin: 0; }
+        .details, .items { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        .details td, .items td, .items th { border: 1px solid #ddd; padding: 8px; }
+        .items th { background-color: #f2f2f2; }
+        .text-right { text-align: right; }
+        .total { font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>Invoice</h1>
-    <p>Original File: {{ $invoiceData['filePath'] }}</p>
-    <table>
-        <thead>
+    <div class="container">
+        <div class="header">
+            <h1>Invoice</h1>
+        </div>
+
+        <table class="details">
             <tr>
-                <th>Item</th>
-                <th>Price</th>
+                <td><strong>Invoice ID:</strong></td>
+                <td>{{ $invoice['invoice_id'] }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach ($invoiceData['lines'] as $line)
+            <tr>
+                <td><strong>Customer ID:</strong></td>
+                <td>{{ $invoice['customer_id'] }}</td>
+            </tr>
+            <tr>
+                <td><strong>Date:</strong></td>
+                <td>{{ date('Y-m-d') }}</td>
+            </tr>
+        </table>
+
+        <table class="items">
+            <thead>
                 <tr>
-                    <td>{{ $line['item'] }}</td>
-                    <td>{{ $line['price'] }}</td>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($invoice['lines'] as $line)
+                    <tr>
+                        <td>
+                            Line Item (Agreement: {{ $line['agreement_version'] }})
+                            <ul>
+                                @foreach ($line as $key => $value)
+                                    @if (!in_array($key, ['line_total', 'agreement_version', 'currency', 'last_line']))
+                                        <li><strong>{{ $key }}:</strong> {{ $value }}</li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </td>
+                        <td class="text-right">{{ number_format($line['line_total'], 2) }} {{ $line['currency'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td class="text-right total">Total:</td>
+                    <td class="text-right total">{{ number_format($invoice['total_amount'], 2) }} {{ $invoice['currency'] }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="footer">
+            <p>Thank you for your business!</p>
+        </div>
+    </div>
 </body>
 </html> 

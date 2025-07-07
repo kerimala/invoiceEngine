@@ -1,133 +1,90 @@
 <?php
 
-use Packages\PricingEngine\Services\PricingEngineService;
-use Packages\PricingEngine\Events\PricedInvoiceLine;
-use Illuminate\Support\Facades\Event;
+namespace Packages\PricingEngine\tests;
+
 use Tests\TestCase;
+use Packages\PricingEngine\Services\PricingEngineService;
+use InvalidArgumentException;
 
-uses(TestCase::class);
+class PricingEngineServiceTest extends TestCase
+{
+    private PricingEngineService $service;
 
-describe('PricingEngineService', function () {
-    it('applies the agreement multiplier to invoice line totals', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => 120];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe(2400);
-        expect($result['agreement_version'])->toBe('v1');
-    });
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->service = new PricingEngineService();
+    }
 
-    it('throws if agreement version is missing', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['multiplier' => 120];
-        expect(fn() => $service->priceLine($parsedLine, $agreement))->toThrow('Agreement version is required');
-    });
-
-    it('handles zero multiplier (results in zero total)', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => 0];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe(0);
-    });
-
-    it('throws if multiplier is negative', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => -10];
-        expect(fn() => $service->priceLine($parsedLine, $agreement))->toThrow('Agreement multiplier must be non-negative');
-    });
-
-    it('throws if required invoice line fields are missing', function () {
-        $service = new PricingEngineService();
-        $agreement = ['version' => 'v1', 'multiplier' => 120];
-        $badLine = ['description' => 'Test Item', 'quantity' => 2];
-        expect(fn() => $service->priceLine($badLine, $agreement))->toThrow('unit_price is required');
-    });
-
-    it('handles decimal multiplier as string', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => '95.5'];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe((int) round(2 * 1000 * 95.5 / 100));
-    });
-
-    it('handles multiplier as float (1.2 means 120%)', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => 1.2];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe(2400);
-    });
-
-    it('handles missing multiplier (defaults to 100%)', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1'];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe(2000);
-    });
-
-    it('handles additional agreement fields (currency, language)', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => 120, 'currency' => 'EUR', 'language' => 'de'];
-        $result = $service->priceLine($parsedLine, $agreement);
-        expect($result['line_total'])->toBe(2400);
-        expect($result['currency'])->toBe('EUR');
-        expect($result['language'])->toBe('de');
-    });
-
-    it('handles multiple lines (batch pricing)', function () {
-        $service = new PricingEngineService();
-        $lines = [
-            ['description' => 'A', 'quantity' => 1, 'unit_price' => 1000],
-            ['description' => 'B', 'quantity' => 2, 'unit_price' => 500],
+    private function getSampleParsedLine(): array
+    {
+        return [
+            'Billing Account' => '6149199',
+            'Shipment Number' => '69439739',
+            'Weight Charge' => '8.36',
+            'XC1 Name' => 'Brandstof',
+            'XC1 Charge' => '1.27',
+            'XC2 Name' => 'GoGreen',
+            'XC2 Charge' => '0.03',
+            'XC3 Name' => 'Tol Belgie',
+            'XC3 Charge' => '0.37',
+            'XC4 Name' => 'Niet-leverb',
+            'XC4 Charge' => '17.03',
+            'XC5 Name' => '',
+            'XC5 Charge' => '',
+            'XC6 Name' => '',
+            'XC6 Charge' => '',
         ];
-        $agreement = ['version' => 'v1', 'multiplier' => 110];
-        $results = $service->priceLines($lines, $agreement);
-        expect($results[0]['line_total'])->toBe(1100);
-        expect($results[1]['line_total'])->toBe(1100);
-    });
+    }
 
-    it('emits event with correct agreement version', function () {
-        Event::fake();
+    private function getSampleAgreement(): array
+    {
+        return [
+            'version' => 'v1.2',
+            'multiplier' => 1.15,
+            'currency' => 'EUR',
+            'rules' => [
+                'base_charge_column' => 'Weight Charge',
+                'surcharge_prefix' => 'XC',
+                'surcharge_suffix' => ' Charge',
+            ]
+        ];
+    }
 
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = ['version' => 'v1', 'multiplier' => 120];
-        $event = $service->priceLineAndEmit($parsedLine, $agreement, '/test/path.csv');
-        expect($event)->toBeInstanceOf(PricedInvoiceLine::class);
-        expect($event->agreement_version)->toBe('v1');
-        expect($event->line_total)->toBe(2400);
+    public function test_it_correctly_calculates_the_line_total_from_spreadsheet_data()
+    {
+        $parsedLine = $this->getSampleParsedLine();
+        $agreement = $this->getSampleAgreement();
 
-        Event::assertDispatched(PricedInvoiceLine::class, function ($event) {
-            return $event->line_total === 2400;
-        });
-        expect($event->filePath)->toBe('/test/path.csv');
-    });
+        $pricedLine = $this->service->priceLine($parsedLine, $agreement);
 
-    it('handles agreement as an object', function () {
-        $service = new PricingEngineService();
-        $parsedLine = ['description' => 'Test Item', 'quantity' => 2, 'unit_price' => 1000];
-        $agreement = (object) ['version' => 'v1', 'multiplier' => 120];
-        $result = $service->priceLine($parsedLine, (array) $agreement);
-        expect($result['line_total'])->toBe(2400);
-    });
+        // (8.36 [Weight] + 1.27 [XC1] + 0.03 [XC2] + 0.37 [XC3] + 17.03 [XC4]) * 1.15 [multiplier]
+        $expectedTotal = (8.36 + 1.27 + 0.03 + 0.37 + 17.03) * 1.15;
+        $this->assertEquals(round($expectedTotal, 2), $pricedLine['line_total']);
+        $this->assertEquals('v1.2', $pricedLine['agreement_version']);
+        $this->assertEquals('EUR', $pricedLine['currency']);
+    }
 
-    it('handles agreement version change between lines', function () {
-        $service = new PricingEngineService();
-        $line1 = ['description' => 'A', 'quantity' => 1, 'unit_price' => 1000];
-        $line2 = ['description' => 'B', 'quantity' => 2, 'unit_price' => 500];
-        $agreement1 = ['version' => 'v1', 'multiplier' => 100];
-        $agreement2 = ['version' => 'v2', 'multiplier' => 200];
-        $result1 = $service->priceLine($line1, $agreement1);
-        $result2 = $service->priceLine($line2, $agreement2);
-        expect($result1['line_total'])->toBe(1000);
-        expect($result2['line_total'])->toBe(2000);
-        expect($result1['agreement_version'])->toBe('v1');
-        expect($result2['agreement_version'])->toBe('v2');
-    });
-}); 
+    public function test_it_handles_lines_with_no_surcharges()
+    {
+        $parsedLine = $this->getSampleParsedLine();
+        // Remove surcharge columns
+        for ($i = 1; $i <= 6; $i++) {
+            unset($parsedLine["XC{$i} Name"]);
+            unset($parsedLine["XC{$i} Charge"]);
+        }
+        
+        $agreement = $this->getSampleAgreement();
+
+        $pricedLine = $this->service->priceLine($parsedLine, $agreement);
+        
+        $expectedTotal = 8.36 * 1.15;
+        $this->assertEquals(round($expectedTotal, 2), $pricedLine['line_total']);
+    }
+
+    public function test_it_throws_an_exception_if_agreement_is_invalid()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->service->priceLine([], ['version' => 'v1', 'rules' => []]);
+    }
+} 

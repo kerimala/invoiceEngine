@@ -238,4 +238,16 @@ class InvoiceFileIngestServiceTest extends TestCase
             @unlink($link);
         }
     }
+
+    public function test_ingests_xlsx_file()
+    {
+        Event::fake();
+        $service = new InvoiceFileIngestService();
+        $filePath = __DIR__ . '/stubs/invoice.xlsx';
+        file_put_contents($filePath, 'dummy xlsx content');
+        $service->ingest($filePath);
+        Event::assertDispatched(FileStored::class, function ($event) use ($filePath) {
+            return $event->filePath === $filePath;
+        });
+    }
 } 
