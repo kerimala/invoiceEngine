@@ -14,5 +14,10 @@
             "InvoicingEngine\\UnitConverter\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "ext-intl": "*"
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.0"
+    }
 }
