@@ -4,6 +4,7 @@ namespace Packages\AgreementService\Services;
 
 use App\Models\Agreement;
 use Illuminate\Support\Facades\Log;
+use Packages\AgreementService\Exceptions\AgreementMissingException;
 
 class AgreementService
 {
@@ -25,13 +26,18 @@ class AgreementService
             $agreementType = 'standard';
 
             if (!$agreement) {
-                Log::error('No standard agreement found.', ['customerId' => $customerId]);
-            }
+            Log::error('No standard agreement found.', ['customerId' => $customerId]);
         }
+    }
 
-        if (!$agreement) {
-            return null;
-        }
+    if (!$agreement) {
+        Log::error('No agreement found for customer (neither custom nor standard).', [
+            'customerId' => $customerId,
+            'timestamp' => now()->toIso8601String(),
+            'blocking' => true
+        ]);
+        throw new AgreementMissingException($customerId);
+    }
 
         Log::info('Applied agreement rule', [
             'agreement_id' => $agreement->id,

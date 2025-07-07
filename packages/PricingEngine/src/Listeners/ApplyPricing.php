@@ -9,6 +9,7 @@ use InvoicingEngine\PricingEngine\Events\PricedInvoiceLine;
 use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Packages\AgreementService\Exceptions\AgreementMissingException;
 
 class ApplyPricing implements ShouldQueue
 {
@@ -23,14 +24,18 @@ class ApplyPricing implements ShouldQueue
         Log::info('ApplyPricing listener started.', ['filePath' => $event->filePath, 'parsedLines' => $event->parsedLines]);
 
         // In a real scenario, you'd extract a customer ID from the file path or metadata
-        $customerId = $event->parsedLines[0]['Billing Account'] ?? 'some_customer_id'; 
-        Log::info('Extracted customer ID for agreement.', ['customerId' => $customerId, 'filePath' => $event->filePath]);
+        $customerId = $event->parsedLines[0]['Billing Account'] ?? 'some_customer_id';
+        $invoiceId = $event->parsedLines[0]['Invoice Number'] ?? null;
+        Log::info('Extracted customer ID for agreement.', ['customerId' => $customerId, 'invoiceId' => $invoiceId, 'filePath' => $event->filePath]);
 
-        $agreement = $this->agreementService->getAgreementForCustomer($customerId);
-
-        if (!$agreement) {
-            Log::error('No agreement found for customer.', ['customerId' => $customerId, 'filePath' => $event->filePath]);
-            return;
+        try {
+            $agreement = $this->agreementService->getAgreementForCustomer($customerId);
+        } catch (AgreementMissingException $e) {
+            // Re-throw with invoice ID if available
+            if ($invoiceId) {
+                throw new AgreementMissingException($customerId, $invoiceId);
+            }
+            throw $e;
         }
 
         Log::info('Retrieved agreement for customer.', ['customerId' => $customerId, 'agreement' => $agreement]);

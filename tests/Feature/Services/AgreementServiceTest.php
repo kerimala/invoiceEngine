@@ -6,6 +6,7 @@ use App\Models\Agreement;
 use Database\Seeders\AgreementSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Packages\AgreementService\Services\AgreementService;
+use Packages\AgreementService\Exceptions\AgreementMissingException;
 use Tests\TestCase;
 
 class AgreementServiceTest extends TestCase
@@ -103,5 +104,53 @@ class AgreementServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertEquals($oldAgreement->id, $result['id']);
         $this->assertEquals('standard', $result['strategy']);
+    }
+
+    /** @test */
+    public function it_throws_agreement_missing_exception_when_no_agreement_found(): void
+    {
+        // Arrange - no agreements in database
+        
+        // Act & Assert
+        $this->expectException(AgreementMissingException::class);
+        $this->expectExceptionCode(422);
+        $this->expectExceptionMessage("Agreement Missing: No valid agreement found for customer 'non-existent-customer'");
+        
+        $this->agreementService->getAgreementForCustomer('non-existent-customer');
+    }
+
+    /** @test */
+    public function it_throws_agreement_missing_exception_when_no_standard_agreement_exists(): void
+    {
+        // Arrange - create a custom agreement but no standard one
+        Agreement::factory()->create([
+            'customer_id' => 'custom-customer',
+            'valid_from' => now()->subDay(),
+        ]);
+        
+        // Act & Assert
+        $this->expectException(AgreementMissingException::class);
+        $this->expectExceptionCode(422);
+        $this->expectExceptionMessage("Agreement Missing: No valid agreement found for customer 'different-customer'");
+        
+        $this->agreementService->getAgreementForCustomer('different-customer');
+    }
+
+    /** @test */
+    public function agreement_missing_exception_contains_customer_id(): void
+    {
+        // Arrange
+        $customerId = 'test-customer-123';
+        
+        try {
+            // Act
+            $this->agreementService->getAgreementForCustomer($customerId);
+            $this->fail('Expected AgreementMissingException was not thrown');
+        } catch (AgreementMissingException $e) {
+            // Assert
+            $this->assertEquals($customerId, $e->getCustomerId());
+            $this->assertNull($e->getInvoiceId());
+            $this->assertEquals(422, $e->getCode());
+        }
     }
 }
