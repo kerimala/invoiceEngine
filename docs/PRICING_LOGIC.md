@@ -35,10 +35,9 @@ An agreement is a simple data structure (typically an array) that contains the f
 -   `vat_rate`: The VAT rate to be applied (e.g., `0.21` for 21%).
 -   `currency`: The currency for the invoice (e.g., `EUR`).
 -   `rules`: An array of rules specific to the pricing strategy. The contents of this array depend on the selected strategy:
-    -   For the `standard` strategy:
-        -   `base_charge_column`: The name of the column containing the base charge.
-        -   `surcharge_prefix`: The prefix for columns that contain surcharges.
-        -   `surcharge_suffix`: The suffix for columns that contain surcharges.
+    -   For the `standard` strategy: The rules are now handled directly within the strategy.
+        -   **Base Charge**: The strategy looks for a column named 'Weight Charge' to use as the base charge.
+        -   **Surcharges**: Any other column ending with 'Charge' (e.g., 'Fuel Charge', 'Security Charge') and containing a numeric value is automatically treated as a surcharge and added to the total.
     -   For the `tiered` strategy:
         -   `quantity_column`: The name of the column containing the quantity.
         -   `tiers`: An array of pricing tiers, where each tier has an `up_to` quantity and a `rate`.

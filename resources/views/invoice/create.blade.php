@@ -15,6 +15,28 @@
 
     <hr>
 
+    <h1>Available Agreements</h1>
+    @if(isset($agreements) && $agreements->count() > 0)
+        <ul>
+            @foreach($agreements as $agreement)
+                <li>
+                    <strong>ID:</strong> {{ $agreement->id }} <br>
+                    <strong>Billing Account:</strong> {{ $agreement->billing_account }} <br>
+                    <strong>Strategy:</strong> {{ $agreement->strategy }} <br>
+                    <strong>Multiplier:</strong> {{ $agreement->multiplier }} <br>
+                    <strong>VAT Rate:</strong> {{ $agreement->vat_rate }} <br>
+                    <strong>Currency:</strong> {{ $agreement->currency }} <br>
+                    <strong>Language:</strong> {{ $agreement->language }} <br>
+                    <strong>Rules:</strong> <pre>{{ json_encode($agreement->rules, JSON_PRETTY_PRINT) }}</pre>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <p>No agreements found.</p>
+    @endif
+
+    <hr>
+
     <h1>Create New Agreement</h1>
     <form action="{{ route('agreement.store') }}" method="POST">
         @csrf

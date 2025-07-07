@@ -12,7 +12,8 @@ class InvoiceController extends Controller
 {
     public function create()
     {
-        return view('invoice.create');
+        $agreements = Agreement::all();
+        return view('invoice.create', ['agreements' => $agreements]);
     }
 
     public function store(Request $request, InvoiceFileIngestService $ingestService)
