@@ -58,6 +58,50 @@ Significant refactoring was done to ensure the test suite is robust and reliable
     ]);
     ```
 
+## End-to-End Invoicing Flow
+
+The following diagram and steps describe the complete invoicing process, from file upload to final delivery.
+
+```mermaid
+graph TD
+    subgraph "File Ingestion & Parsing"
+        A[User uploads invoice file via UI] --> B{InvoiceController};
+        B --> C[InvoiceFileIngestService];
+        C --> D{InvoiceParser};
+        D --> E[Parsed Invoice Data];
+    end
+
+    subgraph "Agreement & Pricing"
+        E --> F{InvoiceService};
+        F --> G[AgreementService];
+        G --> H[Customer Agreement];
+        H --> I{PricingEngineService};
+        E --> I;
+        I --> J[Priced Invoice Lines];
+    end
+
+    subgraph "Assembly & Delivery"
+        J --> K{InvoiceAssemblerService};
+        K --> L[Final Invoice PDF];
+        L --> M{InvoiceSenderService};
+        M --> N[Email to Customer];
+    end
+```
+
+### Detailed Steps
+
+1.  **File Upload**: The process begins when a user uploads an invoice file (e.g., an Excel spreadsheet) through the web interface. The `InvoiceController` receives the file and passes it to the `InvoiceFileIngestService`.
+
+2.  **Ingestion and Parsing**: The `InvoiceFileIngestService` saves the file and uses an `InvoiceParser` to read its contents. The parser extracts the raw data from each line of the invoice and determines the customer ID.
+
+3.  **Agreement Retrieval**: The `InvoiceService` takes the parsed data and uses the `AgreementService` to find the correct, active agreement for the customer. The `AgreementService` queries the database for the latest version of the agreement based on the `valid_from` date.
+
+4.  **Pricing Calculation**: With the agreement and invoice data in hand, the `PricingEngineService` is called. It uses a factory to select the appropriate pricing strategy (e.g., `StandardPricingStrategy`) as defined in the agreement. The strategy then calculates the final price for each line item, including any surcharges and VAT.
+
+5.  **Invoice Assembly**: The `InvoiceAssemblerService` takes the priced line items and compiles them into a structured format. It then uses the `PdfRenderer` to generate a professional-looking PDF of the invoice.
+
+6.  **Delivery**: Finally, the `InvoiceSenderService` sends the generated PDF to the customer via email, completing the invoicing cycle.
+
 ## SFTP Integration
 
 There is currently no direct integration with an SFTP server in the codebase. The file ingestion process is handled locally from the `storage/temp_invoices` directory.
