@@ -16,7 +16,7 @@ To support versioning, the `agreements` table has been modified:
 
 The `AgreementService` has been updated to handle this new structure:
 
-- `getAgreementForCustomer()`: Fetches the latest agreement version for a customer based on the `valid_from` timestamp.
+- `getAgreementForCustomer()`: Fetches the latest agreement version for a customer based on the `valid_from` timestamp. If no customer-specific agreement is found, it falls back to a standard agreement with `customer_id` = `standard`.
 - `createNewVersion(string $customerId, array $data)`: Creates a new agreement version for a customer, incrementing the version number and setting the `valid_from` timestamp.
 
 ### Service Provider
@@ -40,7 +40,12 @@ Significant refactoring was done to ensure the test suite is robust and reliable
 
 2.  **Service Container**: Services are no longer instantiated manually in tests. Instead, they are resolved from Laravel's service container using `$this->app->make()`. This ensures that all dependencies are correctly injected and that the services are in a valid state.
 
-3.  **Data Seeding**: Tests that rely on database records now use the `AgreementService` to create versioned agreements. For example, the `ApplyPricingTest` creates an agreement before dispatching the event that triggers the pricing logic:
+3.  **Agreement Fallback Testing**: The test suite verifies that the service always returns a valid agreement:
+    - `it_can_get_agreement_for_a_customer()`: Verifies retrieval of customer-specific agreements
+    - `it_falls_back_to_standard_agreement()`: Ensures fallback to standard agreement when no customer-specific agreement exists
+    - `it_returns_latest_valid_agreement_version()`: Validates version selection based on `valid_from` timestamp
+
+4.  **Data Seeding**: Tests that rely on database records now use the `AgreementService` to create versioned agreements. For example, the `ApplyPricingTest` creates an agreement before dispatching the event that triggers the pricing logic:
 
     ```php
     $agreementService = $this->app->make(AgreementService::class);
@@ -94,7 +99,7 @@ graph TD
 
 2.  **Ingestion and Parsing**: The `InvoiceFileIngestService` saves the file and uses an `InvoiceParser` to read its contents. The parser extracts the raw data from each line of the invoice and determines the customer ID.
 
-3.  **Agreement Retrieval**: The `InvoiceService` takes the parsed data and uses the `AgreementService` to find the correct, active agreement for the customer. The `AgreementService` queries the database for the latest version of the agreement based on the `valid_from` date.
+3.  **Agreement Retrieval**: The `InvoiceService` takes the parsed data and uses the `AgreementService` to find the correct, active agreement for the customer. The `AgreementService` queries the database for the latest version of the agreement based on the `valid_from` date. If no customer-specific agreement is found, it falls back to the standard agreement.
 
 4.  **Pricing Calculation**: With the agreement and invoice data in hand, the `PricingEngineService` is called. It uses a factory to select the appropriate pricing strategy (e.g., `StandardPricingStrategy`) as defined in the agreement. The strategy then calculates the final price for each line item, including any surcharges and VAT.
 

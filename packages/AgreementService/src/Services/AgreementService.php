@@ -3,20 +3,42 @@
 namespace Packages\AgreementService\Services;
 
 use App\Models\Agreement;
+use Illuminate\Support\Facades\Log;
 
 class AgreementService
 {
     public function getAgreementForCustomer(string $customerId): ?array
     {
         $agreement = Agreement::where('customer_id', $customerId)
-            ->orderBy('version', 'desc')
+            ->where('valid_from', '<=', now())
+            ->orderBy('valid_from', 'desc')
             ->first();
+
+        $agreementType = 'custom';
+
+        if (!$agreement) {
+            $agreement = Agreement::where('customer_id', 'standard')
+                ->where('valid_from', '<=', now())
+                ->orderBy('valid_from', 'desc')
+                ->first();
+            $agreementType = 'standard';
+        }
 
         if (!$agreement) {
             return null;
         }
 
-        return $agreement->toArray();
+        Log::info('Applied agreement rule', [
+            'agreement_id' => $agreement->id,
+            'customer_id' => $customerId,
+            'agreement_type' => $agreementType,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+
+        $result = $agreement->toArray();
+        $result['agreement_type'] = $agreementType;
+
+        return $result;
     }
 
     public function createNewVersion(string $billingAccount, array $data): Agreement

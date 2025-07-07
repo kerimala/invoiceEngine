@@ -28,6 +28,7 @@ class AgreementFactory extends Factory
                 'base_charge_column' => 'Amount',
                 'surcharge_prefix' => 'SUR',
             ],
+            'valid_from' => now(),
         ];
     }
 }

@@ -28,6 +28,7 @@ class Agreement extends Model
         'currency',
         'language',
         'rules',
+        'valid_from',
     ];
 
     protected $casts = [
