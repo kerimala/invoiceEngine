@@ -2,7 +2,7 @@
 
 ## 1. Introduction 
 
-This document outlines the technical architecture of the **Invoice Engine**, a Python-based microservice developed for the Greenway project. Its primary function is to compute detailed invoice lines from customer-specific agreements and shipment orders.
+This document outlines the technical architecture of the **Invoice Engine**, a PHP/Laravel-based modular system developed for the Greenway project. Its primary function is to compute detailed invoice lines from customer-specific agreements and shipment orders with support for locale-based formatting.
 
 ### 1.1 Business Goal
 
@@ -86,18 +86,21 @@ The Agreement Service is responsible for resolving and providing the correct Agr
 ### Event Sourcing
 All events that depend on Agreement data must include the Agreement version (or a resolvable reference) in their payloads.
 
-### Microservices
+### 4.1 Services
 
 Each service is designed to be stateless, microservice-ready, and independently deployable. Here's a brief technology overview:
 
 | Service                  | Input Event                                           | Output Event                  | One-Line Responsibility                                                                         |
 | ------------------------ | ----------------------------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| **invoice-file-ingest**  | _InvoiceFileReceived_ (raw file drop / webhook / API) | _FileStored_                  | Accept carrier invoice files, store them and emit reference metadata.                           |
-| **invoice-parser**       | _FileStored_                                          | _CarrierInvoiceLineExtracted_ | Parse & validate each file, convert line items to canonical JSON.                               |
-| **pricing-engine**       | _MatchedInvoiceLine_                                  | _PricedInvoiceLine_           | Apply customer agreement rules and calculate final price for the line.                          |
-| **invoice-assembler**    | _PricedInvoiceLine_                                   | _InvoiceReady_                | Group lines per customer & invoice period, compute totals, persist DB rows.                     |
-| **pdf-renderer**         | _InvoiceReady_                                        | _PdfRendered_                 | Render PDF with templating engine, store in object store.                                       |
-| **invoice-sender**       | _PdfRendered_                                         | _InvoiceSent_                 | Deliver invoice to ERP/email webhook, update status.                                            |
+| **InvoiceFileIngest**    | _InvoiceFileReceived_ (raw file drop / webhook / API) | _FileStored_                  | Accept carrier invoice files, store them and emit reference metadata.                           |
+| **InvoiceParser**        | _FileStored_                                          | _CarrierInvoiceLineExtracted_ | Parse & validate each file, convert line items to canonical JSON.                               |
+| **PricingEngine**        | _MatchedInvoiceLine_                                  | _PricedInvoiceLine_           | Apply customer agreement strategies and calculate final price for the line.                     |
+| **InvoiceAssembler**     | _PricedInvoiceLine_                                   | _InvoiceReady_                | Group lines per customer & invoice period, compute totals, persist DB rows.                     |
+| **PdfRenderer**          | _InvoiceReady_                                        | _PdfRendered_                 | Render locale-formatted PDF with templating engine, store in object store.                      |
+| **InvoiceSender**        | _PdfRendered_                                         | _InvoiceSent_                 | Deliver invoice to ERP/email webhook, update status.                                            |
+| **FormattingService**    | _LocaleFormatRequest_                                 | _FormattedData_               | Provide locale-based formatting for currencies, numbers, and units.                             |
+| **UnitConverter**        | _UnitConversionRequest_                               | _ConvertedUnit_               | Convert between different units of measurement with locale-aware formatting.                    |
+| **AgreementService**     | _AgreementRequest_                                    | _AgreementData_               | Manages customer agreements and their versioning, including locale and currency specifications. |
 
 ### Machine Learning
 
@@ -144,10 +147,10 @@ Each service is designed to be stateless, microservice-ready, and independently 
 ## 5. Data Flow & Process Flows
 
 1. Order event triggers Invoice Engine.
-2. Engine fetches applicable customer agreement.
-3. Applies rules to match orders and invoice lines.
-4. Calculates final invoice data.
-5. Generates PDF and stores result.
+2. Engine fetches applicable customer agreement with locale specifications.
+3. Applies strategies to match orders and invoice lines.
+4. Calculates final invoice data with locale-aware formatting.
+5. Generates locale-formatted PDF and stores result.
 
 ### 5.1 High Level Activity Diagram
 
@@ -168,19 +171,27 @@ Each service is designed to be stateless, microservice-ready, and independently 
 - **Rule-Based Engine**: Business logic is extensible via Python classes.
 - **Decoupled Architecture**: Services do not depend on each other's internal states; data is exchanged via APIs or events only.
 - **Extensibility by Design**: The system supports future requirements through pluggable rule logic and flexible schema handling.
-- **Python**:  Python was chosen for its readability and developer speed.
+- **PHP/Laravel Framework**: Laravel was chosen for its robust ecosystem, event-driven architecture support, and excellent testing capabilities.
+- **Locale-Based Formatting**: The system supports internationalization through the FormattingService, providing locale-specific number, currency, and unit formatting.
+- **Modular Package Architecture**: Business logic is organized into independent packages within the `/packages` directory.
 
-Example Python structure:
+Example PHP/Laravel structure:
 
-```python
-class InvoiceEngine:
-    def generate_invoice_lines(self, orders, agreement):
-        invoice_lines = []
-        for order in orders:
-            for rule in agreement.rules:
-                if rule.applies_to(order):
-                    invoice_lines.append(rule.apply(order))
-        return invoice_lines
+```php
+class PricingEngineService
+{
+    public function calculateInvoiceLines(array $orders, Agreement $agreement): array
+    {
+        $invoiceLines = [];
+        $strategy = $this->strategyFactory->create($agreement->strategy);
+        
+        foreach ($orders as $order) {
+            $invoiceLines[] = $strategy->calculate($order, $agreement);
+        }
+        
+        return $invoiceLines;
+    }
+}
 ```
 ## 7. Risks & Dependencies
 

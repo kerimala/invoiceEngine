@@ -50,16 +50,40 @@
                         <td>
                             {{ $line['description'] }}
                         </td>
-                        <td class="text-right">{{ number_format($line['nett_total'], 2) }} {{ $line['currency'] }}</td>
-                        <td class="text-right">{{ number_format($line['vat_amount'], 2) }} {{ $line['currency'] }}</td>
-                        <td class="text-right">{{ number_format($line['line_total'], 2) }} {{ $line['currency'] }}</td>
+                        <td class="text-right">
+                            @if($agreement && $formatter)
+                                {{ $formatter->formatPricing($line['nett_total'], $agreement) }}
+                            @else
+                                {{ number_format($line['nett_total'], 2) }} {{ $line['currency'] }}
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($agreement && $formatter)
+                                {{ $formatter->formatPricing($line['vat_amount'], $agreement) }}
+                            @else
+                                {{ number_format($line['vat_amount'], 2) }} {{ $line['currency'] }}
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            @if($agreement && $formatter)
+                                {{ $formatter->formatPricing($line['line_total'], $agreement) }}
+                            @else
+                                {{ number_format($line['line_total'], 2) }} {{ $line['currency'] }}
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="3" class="text-right total">Total:</td>
-                    <td class="text-right total">{{ number_format($invoice['total_amount'], 2) }} {{ $invoice['currency'] }}</td>
+                    <td class="text-right total">
+                        @if($agreement && $formatter)
+                            {{ $formatter->formatPricing($invoice['total_amount'], $agreement) }}
+                        @else
+                            {{ number_format($invoice['total_amount'], 2) }} {{ $invoice['currency'] }}
+                        @endif
+                    </td>
                 </tr>
             </tfoot>
         </table>

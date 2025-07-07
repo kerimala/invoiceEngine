@@ -24,13 +24,14 @@ These packages are loaded into the main Laravel application via `composer.json`.
 ## 3. Where are the tests and the "microservices"?
 
 -   **Microservices (Internal Packages):** They are located in the `/packages` directory. The current packages are:
-    -   `AgreementService` (New)
+    -   `AgreementService`
     -   `InvoiceFileIngest`
     -   `InvoiceParser`
     -   `PricingEngine`
     -   `InvoiceAssembler`
     -   `PdfRenderer`
     -   `InvoiceSender`
+    -   `UnitConverter` (includes FormattingService for locale-based formatting)
 
 -   **Tests:** The tests are found in two locations:
     1.  In the root `/tests` directory for high-level Feature and Unit tests that cover the interaction between packages.
@@ -49,10 +50,10 @@ Tests can be run from the command line using `composer test`.
 
 Yes, the entire application relies on third-party packages managed by **Composer** in the `/vendor` directory. This directory contains *all* external dependencies, including the Laravel framework itself.
 
-Three vendor packages of particular importance to our application logic are:
+Key vendor packages of particular importance to our application logic are:
 -   **`phpoffice/phpspreadsheet`**: Used by the `InvoiceParser` to read `.xlsx` and `.csv` files.
 -   **`spatie/laravel-event-sourcing`**: This package provides the foundation for our event-driven architecture. It simplifies the process of storing, tracking, and reacting to domain events.
--   **`spatie/laravel-pdf`**: This package is used (within the `PdfRenderer` package) to generate PDF invoices from HTML templates.
+-   **`spatie/laravel-pdf`**: This package is used (within the `PdfRenderer` package) to generate PDF invoices from HTML templates with locale-based formatting support.
 
 ## 6. Are we using events?
 
@@ -74,9 +75,35 @@ The event-driven nature of the application creates a logical processing pipeline
     -   **Listened to by:** `InvoiceAssemblerService` (to assemble the final invoice).
 
 4.  `InvoiceAssembled`: Dispatched by `InvoiceAssemblerService` after the final invoice data structure has been created.
-    -   **Listened to by:** `PdfRendererService` (to create the PDF) and/or `InvoiceSenderService` (to send the invoice).
+    -   **Listened to by:** `PdfRendererService` (to create the locale-formatted PDF) and/or `InvoiceSenderService` (to send the invoice).
 
 This event-driven chain ensures that each "microservice" (package) operates independently and only reacts when the previous step in the process is complete.
+
+## Locale-Based Formatting
+
+The Invoice Engine supports internationalization through locale-based formatting:
+
+### FormattingService
+
+The `FormattingService` (part of the `UnitConverter` package) provides:
+- **Currency Formatting**: Locale-specific currency display (e.g., "1.234,56 €" for German, "$1,234.56" for English)
+- **Number Formatting**: Regional decimal and thousands separators
+- **Unit Conversion**: Weight and distance formatting with appropriate units
+- **Fallback Support**: Graceful degradation for unsupported locales
+
+### PDF Integration
+
+The `PdfRenderer` integrates with the formatting system to:
+- Accept Agreement objects containing locale preferences
+- Apply locale-specific formatting to all numerical data in PDFs
+- Maintain backward compatibility with existing invoice generation
+
+### Supported Locales
+
+- **German (de)**: Comma decimal, period thousands separator
+- **English (en)**: Period decimal, comma thousands separator
+- **French (fr)**: Comma decimal, space thousands separator
+- **Extensible**: New locales can be easily added
 
 ## 7. Manual Testing
 
@@ -96,4 +123,4 @@ To facilitate manual testing of the invoice processing pipeline, a simple file u
 
 4.  **Service Registration:** All services are registered in their respective Service Providers to allow for dependency injection.
 
-To use it, run the local server (`php artisan serve`) and navigate to `/invoice/upload` in your browser. 
+To use it, run the local server (`php artisan serve`) and navigate to `/invoice/upload` in your browser.

@@ -103,13 +103,39 @@ graph TD
 
 4.  **Pricing Calculation**: With the agreement and invoice data in hand, the `PricingEngineService` is called. It uses a factory to select the appropriate pricing strategy (e.g., `StandardPricingStrategy`) as defined in the agreement. The strategy then calculates the final price for each line item, including any surcharges and VAT.
 
-5.  **Invoice Assembly**: The `InvoiceAssemblerService` takes the priced line items and compiles them into a structured format. It then uses the `PdfRenderer` to generate a professional-looking PDF of the invoice.
+5.  **Invoice Assembly**: The `InvoiceAssemblerService` takes the priced line items and compiles them into a structured format. It then uses the `PdfRenderer` to generate a professional-looking PDF of the invoice with locale-based formatting.
 
-6.  **Delivery**: Finally, the `InvoiceSenderService` sends the generated PDF to the customer via email, completing the invoicing cycle.
+6.  **Locale-Based Formatting**: The `PdfRenderer` uses the agreement's `language` and `currency` fields to apply appropriate locale-specific formatting through the `FormattingService`. This ensures numbers, currencies, and other data are displayed according to regional preferences.
+
+7.  **Delivery**: Finally, the `InvoiceSenderService` sends the generated PDF to the customer via email, completing the invoicing cycle.
 
 ## SFTP Integration
 
 There is currently no direct integration with an SFTP server in the codebase. The file ingestion process is handled locally from the `storage/temp_invoices` directory.
+
+## Locale-Based Formatting Integration
+
+The Agreement Service now supports locale-based formatting for PDF generation:
+
+### New Agreement Fields
+
+-   `language`: Specifies the locale for number and currency formatting (e.g., 'de' for German, 'en' for English)
+-   `currency`: Used both for pricing calculations and locale-specific currency formatting
+
+### PDF Rendering Integration
+
+The `PdfRenderer` service now:
+-   Accepts an optional `Agreement` object in its `render` method
+-   Uses the agreement's `language` and `currency` fields for locale-aware formatting
+-   Integrates with the `FormattingService` to apply regional formatting rules
+-   Maintains backward compatibility when no agreement is provided
+
+### Supported Locales
+
+-   **German (de)**: Comma decimal separator, period thousands separator
+-   **English (en)**: Period decimal separator, comma thousands separator  
+-   **French (fr)**: Comma decimal separator, space thousands separator
+-   **Fallback**: Defaults to English formatting for unsupported locales
 
 ## Summary of Changes
 
@@ -118,3 +144,6 @@ There is currently no direct integration with an SFTP server in the codebase. Th
 -   Refactored all tests in the `PricingEngine` package to use `RefreshDatabase` and the service container.
 -   Seeded an agreement in `ApplyPricingTest` to resolve a `TypeError`.
 -   Removed temporary migration-loading logic from `tests/TestCase.php`.
+-   **NEW**: Integrated locale-based formatting system with Agreement Service and PDF rendering.
+-   **NEW**: Enhanced `PdfRenderer` to support Agreement-based locale formatting.
+-   **NEW**: Added comprehensive test coverage for locale-specific PDF generation.

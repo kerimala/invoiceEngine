@@ -24,6 +24,7 @@ The pricing logic follows these steps:
 2.  **Select Strategy**: The [`PricingEngineService`](./packages/PricingEngine/src/Services/PricingEngineService.php) uses the [`PricingStrategyFactory`](./packages/PricingEngine/src/Services/PricingStrategyFactory.php) to create the appropriate pricing strategy based on the `strategy` field in the agreement.
 3.  **Price Each Line**: For each line in the invoice data, the selected strategy's `calculate` method is called to determine the final price.
 4.  **Assemble Invoice**: Once all lines are priced, the [`InvoiceAssembler`](./packages/InvoiceAssembler/src/Services/InvoiceAssemblerService.php) service gathers all the priced lines and calculates the total amount for the invoice.
+5.  **Format Output**: The agreement's `language` and `currency` fields are used by the [`FormattingService`](./packages/UnitConverter/src/Services/FormattingService.php) to apply locale-specific formatting when generating PDFs or other output formats.
 
 ## Agreement Structure
 
@@ -34,6 +35,7 @@ An agreement is a simple data structure (typically an array) that contains the f
 -   `multiplier`: A numeric value used by the pricing strategy.
 -   `vat_rate`: The VAT rate to be applied (e.g., `0.21` for 21%).
 -   `currency`: The currency for the invoice (e.g., `EUR`).
+-   `language`: The language/locale code for formatting (e.g., `de`, `en`, `fr`).
 -   `rules`: An array of rules specific to the pricing strategy. The contents of this array depend on the selected strategy:
     -   For the `standard` strategy: The rules are now handled directly within the strategy.
         -   **Base Charge**: The strategy looks for a column named 'Weight Charge' to use as the base charge.

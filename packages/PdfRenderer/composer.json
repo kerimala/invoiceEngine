@@ -1,6 +1,9 @@
 {
   "name": "vendor/pdf-renderer",
   "description": "Handles PDF rendering for invoices.",
+  "require": {
+    "vendor/unit-converter": "*"
+  },
   "autoload": {
     "psr-4": {
       "Packages\\PdfRenderer\\": "src/"
@@ -13,4 +16,4 @@
       ]
     }
   }
-} 
+}

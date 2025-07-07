@@ -3,10 +3,12 @@
 use InvoicingEngine\UnitConverter\Services\FormattingService;
 use InvoicingEngine\UnitConverter\Services\UnitConverterService;
 use App\Models\Agreement;
+use Tests\TestCase;
+
+uses(TestCase::class);
 
 test('formats pricing to locale - EUR with German locale', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'EUR',
@@ -21,8 +23,7 @@ test('formats pricing to locale - EUR with German locale', function () {
 });
 
 test('formats pricing to locale - USD with English locale', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'USD',
@@ -37,8 +38,7 @@ test('formats pricing to locale - USD with English locale', function () {
 });
 
 test('formats pricing to locale - GBP with English locale', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'GBP',
@@ -52,8 +52,7 @@ test('formats pricing to locale - GBP with English locale', function () {
 });
 
 test('formats weight to locale - German', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'de'
@@ -66,8 +65,7 @@ test('formats weight to locale - German', function () {
 });
 
 test('formats weight to locale - English', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'en'
@@ -80,8 +78,7 @@ test('formats weight to locale - English', function () {
 });
 
 test('formats weight to locale - Russian', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'ru'
@@ -94,8 +91,7 @@ test('formats weight to locale - Russian', function () {
 });
 
 test('formats distance to locale - German', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'de'
@@ -108,8 +104,7 @@ test('formats distance to locale - German', function () {
 });
 
 test('formats distance to locale - English', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'en'
@@ -122,8 +117,7 @@ test('formats distance to locale - English', function () {
 });
 
 test('formats distance to locale - Chinese', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'zh'
@@ -136,8 +130,7 @@ test('formats distance to locale - Chinese', function () {
 });
 
 test('formats distance to locale - Japanese', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'language' => 'ja'
@@ -150,8 +143,7 @@ test('formats distance to locale - Japanese', function () {
 });
 
 test('handles unknown currency with fallback', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'XYZ',
@@ -165,8 +157,7 @@ test('handles unknown currency with fallback', function () {
 });
 
 test('handles unknown language with fallback to English', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'EUR',
@@ -181,8 +172,7 @@ test('handles unknown language with fallback to English', function () {
 });
 
 test('formats French locale correctly', function () {
-    $unitConverter = new UnitConverterService();
-    $service = new FormattingService($unitConverter);
+    $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'EUR',

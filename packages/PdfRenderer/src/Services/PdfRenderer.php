@@ -8,16 +8,26 @@ use Illuminate\Support\Facades\View;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Packages\InvoiceAssembler\DTOs\Invoice;
+use InvoicingEngine\UnitConverter\Services\FormattingService;
+use InvoicingEngine\UnitConverter\Services\UnitConverterService;
+use App\Models\Agreement;
 
 class PdfRenderer
 {
+    private FormattingService $formattingService;
+
+    public function __construct()
+    {
+        $this->formattingService = new FormattingService(new UnitConverterService());
+    }
     /**
      * Render invoice data to a PDF and store it.
      *
      * @param array|Invoice $invoiceData
+     * @param Agreement|null $agreement
      * @return string Path to stored PDF
      */
-    public function render(array $invoiceData): string
+    public function render(array $invoiceData, ?Agreement $agreement = null): string
     {
         $invoiceId = $invoiceData['invoice_id'] ?? 'unknown_invoice';
         Log::info('Starting PDF rendering.', ['invoice_id' => $invoiceId]);
@@ -30,7 +40,11 @@ class PdfRenderer
             }
 
             // Render the HTML from a Blade view
-            $html = View::make('pdf-renderer::invoice', ['invoice' => $invoiceData])->render();
+            $html = View::make('pdf-renderer::invoice', [
+                'invoice' => $invoiceData,
+                'agreement' => $agreement,
+                'formatter' => $this->formattingService
+            ])->render();
             Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId]);
 
             // Create a new Dompdf instance
