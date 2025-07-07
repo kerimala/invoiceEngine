@@ -17,6 +17,14 @@ class SendInvoice implements ShouldQueue
 
     public function handle(PdfRendered $event): void
     {
+        // Debug: Log the type and value of pdfPath
+        \Illuminate\Support\Facades\Log::info('SendInvoice: pdfPath debug', [
+            'pdfPath_type' => gettype($event->pdfPath),
+            'pdfPath_value' => $event->pdfPath,
+            'is_string' => is_string($event->pdfPath),
+            'is_array' => is_array($event->pdfPath)
+        ]);
+        
         // Reconstruct Invoice DTO from array data
         $invoice = new Invoice($event->invoiceData['invoice_id'], $event->invoiceData['customer_id']);
         $invoice->setTotalAmount($event->invoiceData['total_amount']);
@@ -28,17 +36,15 @@ class SendInvoice implements ShouldQueue
         foreach ($event->invoiceData['lines'] as $lineData) {
             $line = new InvoiceLine(
                 $lineData['description'],
-                $lineData['quantity'],
-                $lineData['unit_price'],
-                $lineData['currency'],
-                $lineData['agreement_version'],
-                $lineData['last_line'],
-                $lineData['nett_total'],
-                $lineData['vat_amount']
+                (float) $lineData['quantity'],
+                (float) $lineData['unit_price'],
+                (float) $lineData['nett_total'],
+                (float) $lineData['vat_amount'],
+                $lineData['product_name'] ?? null,
+                $lineData['currency'] ?? 'USD',
+                $lineData['agreement_version'] ?? '1.0',
+                (bool) ($lineData['last_line'] ?? false)
             );
-            if (isset($lineData['product_name'])) {
-                $line->setProductName($lineData['product_name']);
-            }
             $lines[] = $line;
         }
         $invoice->setLines($lines);
