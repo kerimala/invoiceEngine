@@ -2,17 +2,19 @@
 
 namespace InvoicingEngine\PricingEngine\Tests;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use InvoicingEngine\PricingEngine\Strategies\StandardPricingStrategy;
 
 class StandardPricingStrategyTest extends TestCase
 {
+    use RefreshDatabase;
     private StandardPricingStrategy $strategy;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->strategy = new StandardPricingStrategy();
+        $this->strategy = $this->app->make(StandardPricingStrategy::class);
     }
 
     private function getSampleParsedLine(): array

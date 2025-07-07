@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Packages\InvoiceFileIngest\Services\InvoiceFileIngestService;
 use Illuminate\Support\Facades\Storage;
+use Packages\InvoiceService\Services\InvoiceService;
+use App\Models\Agreement;
 
 class InvoiceController extends Controller
 {
@@ -26,5 +28,18 @@ class InvoiceController extends Controller
         $ingestService->ingest(Storage::path($path));
 
         return 'File uploaded and is being processed.';
+    }
+
+    public function generate(Request $request, InvoiceService $invoiceService)
+    {
+        $request->validate([
+            'agreement_id' => 'required|exists:agreements,id',
+        ]);
+
+        $agreement = Agreement::find($request->input('agreement_id'));
+
+        $invoice = $invoiceService->generateInvoiceForAgreement($agreement);
+
+        return response()->json($invoice);
     }
 }

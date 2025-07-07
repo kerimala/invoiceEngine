@@ -50,6 +50,7 @@
             "Packages\\PdfRenderer\\": "packages/PdfRenderer/src/",
             "Packages\\InvoiceSender\\": "packages/InvoiceSender/src/",
             "Packages\\AgreementService\\": "packages/AgreementService/src/",
+            "Packages\\InvoiceService\\": "packages/InvoiceService/src/",
             "Packages\\InvoiceSender\\Mail\\": "packages/InvoiceSender/Mail/",
             "InvoicingEngine\\PricingEngine\\": "packages/PricingEngine/src/"
         }

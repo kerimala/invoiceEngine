@@ -2,38 +2,42 @@
 
 namespace Packages\AgreementService\Services;
 
-use Illuminate\Support\Facades\Log;
+use App\Models\Agreement;
 
 class AgreementService
 {
-    /**
-     * Fetches the agreement for a given customer.
-     * In a real implementation, this would involve a database query
-     * or a call to an external service.
-     *
-     * @param string $customerId
-     * @return array
-     */
-    public function getAgreementForCustomer(string $customerId): array
+    public function getAgreementForCustomer(string $customerId): ?array
     {
-        Log::info('Fetching agreement for customer.', ['customerId' => $customerId]);
-        // For now, return a hardcoded agreement.
-        // The customerId is ignored in this placeholder.
-        $agreement = [
-            'version' => 'v1.2',
-            'strategy' => 'standard',
-            'multiplier' => 1.15,
-            'vat_rate' => 0.21,
-            'currency' => 'EUR',
-            'language' => 'en',
-            'rules' => [
-                'base_charge_column' => 'Weight Charge',
-                'surcharge_prefix' => 'XC',
-                'surcharge_suffix' => 'Charge',
-            ]
-        ];
+        $agreement = Agreement::where('customer_id', $customerId)
+            ->orderBy('version', 'desc')
+            ->first();
 
-        Log::info('Agreement found for customer.', ['customerId' => $customerId, 'agreement_version' => $agreement['version']]);
-        return $agreement;
+        if (!$agreement) {
+            return null;
+        }
+
+        return $agreement->toArray();
+    }
+
+    public function createNewVersion(string $billingAccount, array $data): Agreement
+    {
+        $latestAgreement = Agreement::where('customer_id', $billingAccount)
+            ->orderBy('version', 'desc')
+            ->first();
+
+        $newVersion = $latestAgreement ? $latestAgreement->version + 1 : 1;
+
+        return Agreement::create(array_merge($data, [
+            'customer_id' => $billingAccount,
+            'version' => $newVersion,
+            'valid_from' => now(),
+        ]));
+    }
+
+    public function calculateAmount(Agreement $agreement): float
+    {
+        // This is a simplified calculation. A more complex implementation would
+        // involve a strategy pattern to handle different calculation rules.
+        return 100 * $agreement->multiplier;
     }
 }

@@ -16,7 +16,7 @@ class InvoiceAssembler
     public function createInvoice(array $lines): Invoice
     {
         $invoiceId = 'INV-' . uniqid();
-        $customerEmail = 'customer@example.com'; // Default for testing
+        $customerEmail = $lines[0]['Billing Account'] ?? 'customer@example.com'; // Default for testing
         
         $invoice = new Invoice($invoiceId, $customerEmail);
         

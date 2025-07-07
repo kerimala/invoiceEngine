@@ -2,18 +2,20 @@
 
 namespace InvoicingEngine\PricingEngine\Tests;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use InvoicingEngine\PricingEngine\Services\PricingEngineService;
 use InvalidArgumentException;
 
 class PricingEngineServiceTest extends TestCase
 {
+    use RefreshDatabase;
     private PricingEngineService $service;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->service = new PricingEngineService();
+        $this->service = $this->app->make(PricingEngineService::class);
     }
 
     private function getSampleParsedLine(): array

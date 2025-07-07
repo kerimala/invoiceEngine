@@ -20,14 +20,20 @@ class ApplyPricing implements ShouldQueue
 
     public function handle(CarrierInvoiceLineExtracted $event): void
     {
-        Log::info('ApplyPricing listener started.', ['filePath' => $event->filePath]);
+        Log::info('ApplyPricing listener started.', ['filePath' => $event->filePath, 'parsedLines' => $event->parsedLines]);
 
         // In a real scenario, you'd extract a customer ID from the file path or metadata
-        $customerId = 'some_customer_id'; 
+        $customerId = $event->parsedLines[0]['Billing Account'] ?? 'some_customer_id'; 
         Log::info('Extracted customer ID for agreement.', ['customerId' => $customerId, 'filePath' => $event->filePath]);
 
         $agreement = $this->agreementService->getAgreementForCustomer($customerId);
-        Log::info('Retrieved agreement for customer.', ['customerId' => $customerId]);
+
+        if (!$agreement) {
+            Log::error('No agreement found for customer.', ['customerId' => $customerId, 'filePath' => $event->filePath]);
+            return;
+        }
+
+        Log::info('Retrieved agreement for customer.', ['customerId' => $customerId, 'agreement' => $agreement]);
 
         $lineCount = count($event->parsedLines);
         Log::info('Starting to price lines.', ['lineCount' => $lineCount, 'filePath' => $event->filePath]);

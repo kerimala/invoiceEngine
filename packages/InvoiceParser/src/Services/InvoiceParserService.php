@@ -70,7 +70,9 @@ class InvoiceParserService
                     continue;
                 }
 
-                $parsedLines[] = array_combine($header, $lineData);
+                $combinedData = array_combine($header, $lineData);
+                Log::info('InvoiceParserService: Combined Data', ['combined_data' => $combinedData]);
+                $parsedLines[] = $combinedData;
                 Log::info('InvoiceParserService: Line parsed', ['parsed_line' => end($parsedLines), 'filePath' => $filePath]);
             }
 
@@ -113,4 +115,4 @@ class InvoiceParserService
             Log::info('InvoiceParserService: Finished parsing XML and dispatched event.', ['filePath' => $filePath]);
         }
     }
-} 
+}

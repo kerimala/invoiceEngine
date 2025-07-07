@@ -1,0 +1,18 @@
+{
+    "name": "vendor/invoice-service",
+    "description": "Invoice service package.",
+    "type": "library",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Packages\\InvoiceService\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "your@email.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}

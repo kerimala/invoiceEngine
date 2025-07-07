@@ -18,4 +18,9 @@ class AgreementServiceProvider extends ServiceProvider
             return new AgreementService();
         });
     }
-} 
+
+    public function boot()
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+    }
+}

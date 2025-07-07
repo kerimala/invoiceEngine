@@ -18,15 +18,14 @@ class StandardPricingStrategy implements PricingStrategyInterface
      */
     public function calculate(array $invoiceLine, array $agreement): array
     {
-        $rules = $agreement['rules'];
+        Log::info('StandardPricingStrategy: Received data for calculation.', ['invoice_line' => $invoiceLine, 'agreement' => $agreement]);
         $multiplier = $agreement['multiplier'] ?? 1;
 
-        $baseChargeColumn = $rules['base_charge_column'];
-        $baseCharge = (float) ($invoiceLine[$baseChargeColumn] ?? 0);
+        $baseCharge = (float) ($invoiceLine['Weight Charge'] ?? 0);
 
         $surchargeTotal = 0;
         foreach ($invoiceLine as $key => $value) {
-            if (str_starts_with($key, $rules['surcharge_prefix']) && str_ends_with($key, $rules['surcharge_suffix'])) {
+            if (str_ends_with($key, 'Charge') && $key !== 'Weight Charge' && is_numeric($value)) {
                 $surchargeTotal += (float) $value;
             }
         }
