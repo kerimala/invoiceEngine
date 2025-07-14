@@ -38,7 +38,7 @@ Route::get('/test-pdf', function () {
         'invoicing_company_email' => 'info@demo-logistics.example',
         'invoicing_company_website' => 'www.demo-logistics.example',
         'invoicing_company_vat_number' => 'NL123456789B01',
-        'logo_path' => null, // No logo for test
+        'logo_path' => 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/Logo-Test.png'))), // Logo for test
         'invoice_number_prefix' => 'DEMO-',
         'invoice_footer_text' => 'Dit is een demo factuur voor test doeleinden.'
     ]);
