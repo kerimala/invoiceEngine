@@ -282,7 +282,7 @@
 
         <!-- Payment Terms -->
         <div style="margin-top: 30px; font-size: 11px;">
-            <p><em>{{ __('invoice.payment_method') }}</em></p>
+            <p><em>{{ __('invoice.payment_info') }}</em></p>
             <p><em>{{ __('invoice.collection_date') }}: 
                 @if($agreement && $formatter)
                     {{ $formatter->formatDate(new \DateTime('+14 days'), $agreement) }}

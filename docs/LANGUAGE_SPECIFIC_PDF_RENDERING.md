@@ -124,6 +124,7 @@ Key translation strings in `invoice.php`:
 - `vat`: "VAT"
 - `invoice_amount`: "Invoice Amount"
 - `payment_terms`: "Payment Terms"
+- `payment_info`: "Payment Information"
 - `collection_date`: "Collection Date"
 
 ## Future Enhancements
