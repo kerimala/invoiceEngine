@@ -26,7 +26,7 @@ class InvoiceService
             'vat_rate' => $agreement->vat_rate,
             'vat_amount' => $calculatedAmount * ($agreement->vat_rate / 100),
             'total_amount' => $calculatedAmount * (1 + $agreement->vat_rate / 100),
-            'language' => $agreement->language,
+            'locale' => $agreement->locale,
             'generated_at' => now()->toIso8601String(),
         ];
     }

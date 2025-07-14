@@ -22,7 +22,7 @@ class AgreementSeeder extends Seeder
                 'multiplier' => 1.0,
                 'vat_rate' => 0.21,
                 'currency' => 'EUR',
-                'language' => 'en',
+                'locale' => 'en',
                 'rules' => json_encode([
                     'base_charge_column' => 'Weight Charge',
                     'surcharge_prefix' => 'SUR',
@@ -39,7 +39,7 @@ class AgreementSeeder extends Seeder
                 'multiplier' => 1.15,
                 'vat_rate' => 0.21,
                 'currency' => 'EUR',
-                'language' => 'en',
+                'locale' => 'en',
                 'rules' => json_encode([
                     'base_charge_column' => 'Weight Charge',
                     'surcharge_prefix' => 'XC',

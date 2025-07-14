@@ -23,7 +23,7 @@ class AgreementFactory extends Factory
             'multiplier' => 1.0,
             'vat_rate' => 0.20,
             'currency' => 'EUR',
-            'language' => 'en',
+            'locale' => 'en',
             'rules' => [
                 'base_charge_column' => 'Amount',
                 'surcharge_prefix' => 'SUR',

@@ -48,7 +48,7 @@ $formatter = new FormattingService($unitConverter);
 // Create an agreement with locale settings
 $agreement = new Agreement([
     'currency' => 'EUR',
-    'language' => 'de'
+    'locale' => 'de'
 ]);
 
 // Format pricing
@@ -112,6 +112,6 @@ vendor/bin/pest packages/UnitConverter/tests/FormattingServiceTest.php
 
 The FormattingService is designed to work seamlessly with the Agreement model, which contains:
 - `currency`: The currency code (e.g., 'EUR', 'USD')
-- `language`: The language code (e.g., 'en', 'de', 'fr')
+- `locale`: The locale code (e.g., 'en', 'de', 'fr')
 
 This allows for automatic locale-based formatting based on customer agreements.

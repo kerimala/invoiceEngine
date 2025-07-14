@@ -54,7 +54,7 @@ Significant refactoring was done to ensure the test suite is robust and reliable
         'multiplier' => 1.0,
         'vat_rate' => 21.0,
         'currency' => 'EUR',
-        'language' => 'en',
+        'locale' => 'en',
         'rules' => [
             'base_charge_column' => 'Weight Charge',
             'surcharge_prefix' => 'SUR',
@@ -105,7 +105,7 @@ graph TD
 
 5.  **Invoice Assembly**: The `InvoiceAssemblerService` takes the priced line items and compiles them into a structured format. It then uses the `PdfRenderer` to generate a professional-looking PDF of the invoice with locale-based formatting.
 
-6.  **Locale-Based Formatting**: The `PdfRenderer` uses the agreement's `language` and `currency` fields to apply appropriate locale-specific formatting through the `FormattingService`. This ensures numbers, currencies, and other data are displayed according to regional preferences.
+6.  **Locale-Based Formatting**: The `PdfRenderer` uses the agreement's `locale` and `currency` fields to apply appropriate locale-specific formatting through the `FormattingService`. This ensures numbers, currencies, and other data are displayed according to regional preferences.
 
 7.  **Delivery**: Finally, the `InvoiceSenderService` sends the generated PDF to the customer via email, completing the invoicing cycle.
 
@@ -119,14 +119,14 @@ The Agreement Service now supports locale-based formatting for PDF generation:
 
 ### New Agreement Fields
 
--   `language`: Specifies the locale for number and currency formatting (e.g., 'de' for German, 'en' for English)
+-   `locale`: Specifies the locale for number and currency formatting (e.g., 'de' for German, 'en' for English)
 -   `currency`: Used both for pricing calculations and locale-specific currency formatting
 
 ### PDF Rendering Integration
 
 The `PdfRenderer` service now:
 -   Accepts an optional `Agreement` object in its `render` method
--   Uses the agreement's `language` and `currency` fields for locale-aware formatting
+-   Uses the agreement's `locale` and `currency` fields for locale-aware formatting
 -   Integrates with the `FormattingService` to apply regional formatting rules
 -   Maintains backward compatibility when no agreement is provided
 

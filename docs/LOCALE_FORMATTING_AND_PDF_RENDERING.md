@@ -18,9 +18,9 @@ The `FormattingService` is responsible for formatting various types of data base
 
 #### Key Methods
 
-- `formatPricing(float $amount, string $currency, string $language)`: Formats monetary amounts
-- `formatWeight(float $weight, string $unit, string $language)`: Formats weight values
-- `formatDistance(float $distance, string $unit, string $language)`: Formats distance values
+- `formatPricing(float $amount, string $currency, string $locale)`: Formats monetary amounts
+- `formatWeight(float $weight, string $unit, string $locale)`: Formats weight values
+- `formatDistance(float $distance, string $unit, string $locale)`: Formats distance values
 
 #### Supported Locales
 
@@ -73,7 +73,7 @@ public function render(array $invoice, ?Agreement $agreement = null): string
 **Example Template Usage**:
 ```php
 @if(isset($formatter) && isset($agreement))
-    {{ $formatter->formatPricing($invoice['nett_total'], $agreement->currency, $agreement->language) }}
+    {{ $formatter->formatPricing($invoice['nett_total'], $agreement->currency, $agreement->locale) }}
 @else
     {{ number_format($invoice['nett_total'], 2) }}
 @endif
@@ -86,13 +86,13 @@ The locale-based formatting system integrates with the existing Agreement struct
 ### Required Agreement Fields
 
 - `currency`: The currency code (e.g., 'EUR', 'USD', 'GBP')
-- `language`: The language/locale code (e.g., 'de', 'en', 'fr')
+- `locale`: The locale code (e.g., 'de', 'en', 'fr')
 
 ### Agreement Data Flow
 
 1. **Agreement Retrieval**: The `AgreementService` provides customer-specific agreements
 2. **PDF Generation**: The `PdfRenderer` receives the agreement object
-3. **Locale Detection**: The formatter uses agreement's language and currency settings
+3. **Locale Detection**: The formatter uses agreement's locale and currency settings
 4. **Formatting Application**: All numerical data is formatted according to locale rules
 
 ## Testing Coverage
@@ -152,7 +152,7 @@ The implementation maintains backward compatibility:
 $agreement = Agreement::create([
     'customer_id' => 'customer_123',
     'currency' => 'EUR',
-    'language' => 'de',
+    'locale' => 'de',
     'strategy' => 'standard',
     'multiplier' => 1.0,
     'vat_rate' => 19.0,

@@ -32,7 +32,7 @@ class AgreementServiceTest extends TestCase
             'multiplier' => 1.15,
             'vat_rate' => 0.21,
             'currency' => 'EUR',
-            'language' => 'en',
+            'locale' => 'en',
             'rules' => [
                 'base_charge_column' => 'Weight Charge',
                 'surcharge_prefix' => 'XC',
@@ -80,7 +80,7 @@ class AgreementServiceTest extends TestCase
             'multiplier' => 1.0,
             'vat_rate' => 0.21,
             'currency' => 'EUR',
-            'language' => 'en',
+            'locale' => 'en',
             'rules' => ['base_charge_column' => 'Weight'],
         ]);
 
@@ -92,7 +92,7 @@ class AgreementServiceTest extends TestCase
             'multiplier' => 1.5,
             'vat_rate' => 0.21,
             'currency' => 'EUR',
-            'language' => 'en',
+            'locale' => 'en',
             'rules' => ['base_charge_column' => 'Weight'],
             'valid_from' => now()->addDay(),
         ]);

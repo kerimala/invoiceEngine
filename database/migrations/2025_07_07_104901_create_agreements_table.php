@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('multiplier', 8, 4);
             $table->decimal('vat_rate', 5, 4);
             $table->string('currency', 3);
-            $table->string('language', 2);
+            $table->string('locale', 2);
             $table->json('rules');
             $table->timestamps();
         });

@@ -21,7 +21,7 @@ class FormattingService
         $cents = $this->unitConverter->toCents($amount);
         $formattedAmount = $cents / 100;
         
-        return $this->formatCurrency($formattedAmount, $agreement->currency, $agreement->language);
+        return $this->formatCurrency($formattedAmount, $agreement->currency, $agreement->locale);
     }
 
     /**
@@ -32,7 +32,7 @@ class FormattingService
         $nanograms = $this->unitConverter->toNanograms($weight);
         $formattedWeight = $nanograms / 1_000_000_000;
         
-        return $this->formatNumber($formattedWeight, $agreement->language) . ' ' . $this->getWeightUnit($agreement->language);
+        return $this->formatNumber($formattedWeight, $agreement->locale) . ' ' . $this->getWeightUnit($agreement->locale);
     }
 
     /**
@@ -43,19 +43,19 @@ class FormattingService
         $millimeters = $this->unitConverter->toMillimeters($distance);
         $formattedDistance = $millimeters / 1000;
         
-        return $this->formatNumber($formattedDistance, $agreement->language) . ' ' . $this->getDistanceUnit($agreement->language);
+        return $this->formatNumber($formattedDistance, $agreement->locale) . ' ' . $this->getDistanceUnit($agreement->locale);
     }
 
     /**
      * Format currency based on locale
      */
-    private function formatCurrency(float $amount, string $currency, string $language): string
+    private function formatCurrency(float $amount, string $currency, string $locale): string
     {
         // Use consistent fallback formatting for predictable results
-        $formattedNumber = number_format($amount, 2, $this->getDecimalSeparator($language), $this->getThousandsSeparator($language));
+        $formattedNumber = number_format($amount, 2, $this->getDecimalSeparator($locale), $this->getThousandsSeparator($locale));
         
         // Place currency symbol based on locale conventions
-        if (in_array($language, ['de', 'fr', 'es', 'it', 'nl', 'pt', 'pl', 'ru'])) {
+        if (in_array($locale, ['de', 'fr', 'es', 'it', 'nl', 'pt', 'pl', 'ru'])) {
             return $formattedNumber . ' ' . $this->getCurrencySymbol($currency);
         }
         
@@ -65,16 +65,16 @@ class FormattingService
     /**
      * Format number based on locale
      */
-    private function formatNumber(float $number, string $language): string
+    private function formatNumber(float $number, string $locale): string
     {
         // Use consistent fallback formatting for predictable results
-        return number_format($number, 2, $this->getDecimalSeparator($language), $this->getThousandsSeparator($language));
+        return number_format($number, 2, $this->getDecimalSeparator($locale), $this->getThousandsSeparator($locale));
     }
 
     /**
-     * Get locale string from language code
+     * Get locale string from locale code
      */
-    private function getLocale(string $language): string
+    private function getLocale(string $locale): string
     {
         $locales = [
             'en' => 'en_US',
@@ -90,7 +90,7 @@ class FormattingService
             'ja' => 'ja_JP',
         ];
         
-        return $locales[$language] ?? 'en_US';
+        return $locales[$locale] ?? 'en_US';
     }
 
     /**
@@ -112,9 +112,9 @@ class FormattingService
     }
 
     /**
-     * Get decimal separator for language
+     * Get decimal separator for locale
      */
-    private function getDecimalSeparator(string $language): string
+    private function getDecimalSeparator(string $locale): string
     {
         $separators = [
             'en' => '.',
@@ -128,13 +128,13 @@ class FormattingService
             'ru' => ',',
         ];
         
-        return $separators[$language] ?? '.';
+        return $separators[$locale] ?? '.';
     }
 
     /**
-     * Get thousands separator for language
+     * Get thousands separator for locale
      */
-    private function getThousandsSeparator(string $language): string
+    private function getThousandsSeparator(string $locale): string
     {
         $separators = [
             'en' => ',',
@@ -148,13 +148,13 @@ class FormattingService
             'ru' => ' ',
         ];
         
-        return $separators[$language] ?? ',';
+        return $separators[$locale] ?? ',';
     }
 
     /**
-     * Get weight unit for language
+     * Get weight unit for locale
      */
-    private function getWeightUnit(string $language): string
+    private function getWeightUnit(string $locale): string
     {
         $units = [
             'en' => 'g',
@@ -170,13 +170,13 @@ class FormattingService
             'ja' => 'グラム',
         ];
         
-        return $units[$language] ?? 'g';
+        return $units[$locale] ?? 'g';
     }
 
     /**
-     * Get distance unit for language
+     * Get distance unit for locale
      */
-    private function getDistanceUnit(string $language): string
+    private function getDistanceUnit(string $locale): string
     {
         $units = [
             'en' => 'm',
@@ -192,6 +192,6 @@ class FormattingService
             'ja' => 'メートル',
         ];
         
-        return $units[$language] ?? 'm';
+        return $units[$locale] ?? 'm';
     }
 }

@@ -26,7 +26,7 @@ class Agreement extends Model
         'multiplier',
         'vat_rate',
         'currency',
-        'language',
+        'locale',
         'rules',
         'valid_from',
     ];

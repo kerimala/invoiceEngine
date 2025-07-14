@@ -45,7 +45,7 @@ class PdfRendererTest extends TestCase
         // Create agreement with German locale
         $agreement = new Agreement([
             'currency' => 'EUR',
-            'language' => 'de',
+            'locale' => 'de',
             'customer_id' => 'test@example.com'
         ]);
         
@@ -82,7 +82,7 @@ class PdfRendererTest extends TestCase
         // Create agreement with English locale
         $agreement = new Agreement([
             'currency' => 'USD',
-            'language' => 'en',
+            'locale' => 'en',
             'customer_id' => 'test@example.com'
         ]);
         

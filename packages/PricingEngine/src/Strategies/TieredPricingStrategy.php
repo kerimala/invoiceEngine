@@ -6,12 +6,20 @@ use InvalidArgumentException;
 
 use InvoicingEngine\PricingEngine\Interfaces\PricingStrategyInterface;
 
+/**
+ * Tiered pricing strategy with flexible column mapping support.
+ * 
+ * Supports configurable column names through agreement rules:
+ * - quantity_column: Column name for quantity calculation (default: 'Quantity')
+ */
 class TieredPricingStrategy implements PricingStrategyInterface
 {
     public function calculate(array $invoiceLine, array $agreement): array
     {
         $rules = $agreement['rules'];
-        $quantity = $invoiceLine[$rules['quantity_column']];
+        // Use flexible column mapping for quantity
+        $quantityColumn = $rules['quantity_column'] ?? 'Quantity';
+        $quantity = $invoiceLine[$quantityColumn];
         $tiers = $rules['tiers'];
 
         if (empty($tiers)) {

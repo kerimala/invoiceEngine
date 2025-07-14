@@ -23,7 +23,7 @@ class ApplyPricingTest extends TestCase
             'multiplier' => 1.0,
             'vat_rate' => 21.0,
             'currency' => 'EUR',
-            'language' => 'en',
+            'locale' => 'en',
             'rules' => [
                 'base_charge_column' => 'Weight Charge',
                 'surcharge_prefix' => 'SUR',

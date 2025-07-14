@@ -49,7 +49,7 @@ class FullInvoiceProcessTest extends TestCase
         $agreement = Agreement::create([
             'customer_id' => 'test@example.com',
             'currency' => 'EUR',
-            'language' => 'de',
+            'locale' => 'de',
             'version' => '1.0',
             'strategy' => 'standard',
             'multiplier' => 1.0,
@@ -91,7 +91,7 @@ class FullInvoiceProcessTest extends TestCase
         $agreement = Agreement::create([
             'customer_id' => 'test@example.com',
             'currency' => 'USD',
-            'language' => 'en',
+            'locale' => 'en',
             'version' => '1.0',
             'strategy' => 'standard',
             'multiplier' => 1.0,

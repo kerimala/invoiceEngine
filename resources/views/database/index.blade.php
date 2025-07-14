@@ -21,7 +21,7 @@
                     <th>Multiplier</th>
                     <th>VAT Rate</th>
                     <th>Currency</th>
-                    <th>Language</th>
+                    <th>Locale</th>
                     <th>Rules</th>
                 </tr>
             </thead>
@@ -35,7 +35,7 @@
                         <td>{{ $agreement->multiplier }}</td>
                         <td>{{ $agreement->vat_rate }}</td>
                         <td>{{ $agreement->currency }}</td>
-                        <td>{{ $agreement->language }}</td>
+                        <td>{{ $agreement->locale }}</td>
                         <td><pre>{{ json_encode($agreement->rules, JSON_PRETTY_PRINT) }}</pre></td>
                     </tr>
                 @endforeach

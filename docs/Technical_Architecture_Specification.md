@@ -64,7 +64,7 @@ This split allows independent deployment, scaling and clear error localisation.
 Agreements are versioned, immutable configuration objects that encapsulate all business rules and settings relevant to invoice processing. Each Agreement version is uniquely identified and may include, but is not limited to:
 
 - Pricing margins and rules
-- Language and localization specifications  
+- Locale and localization specifications  
 - Number formatting and conversions
 - Branding elements (e.g., logo inclusion)
 - Any other business-specific configuration

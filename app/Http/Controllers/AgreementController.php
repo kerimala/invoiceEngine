@@ -22,7 +22,7 @@ class AgreementController extends Controller
             'multiplier' => 'required|numeric',
             'vat_rate' => 'required|numeric',
             'currency' => 'required|string',
-            'language' => 'required|string',
+            'locale' => 'required|string',
             'rules' => 'required|json',
         ]);
 

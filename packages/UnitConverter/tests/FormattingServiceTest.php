@@ -12,7 +12,7 @@ test('formats pricing to locale - EUR with German locale', function () {
     
     $agreement = new Agreement([
         'currency' => 'EUR',
-        'language' => 'de'
+        'locale' => 'de'
     ]);
     
     $result = $service->formatPricing(123.45, $agreement);
@@ -27,7 +27,7 @@ test('formats pricing to locale - USD with English locale', function () {
     
     $agreement = new Agreement([
         'currency' => 'USD',
-        'language' => 'en'
+        'locale' => 'en'
     ]);
     
     $result = $service->formatPricing(1234.56, $agreement);
@@ -42,7 +42,7 @@ test('formats pricing to locale - GBP with English locale', function () {
     
     $agreement = new Agreement([
         'currency' => 'GBP',
-        'language' => 'en'
+        'locale' => 'en'
     ]);
     
     $result = $service->formatPricing(99.99, $agreement);
@@ -55,7 +55,7 @@ test('formats weight to locale - German', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'de'
+        'locale' => 'de'
     ]);
     
     $result = $service->formatWeight(1.5, $agreement);
@@ -68,7 +68,7 @@ test('formats weight to locale - English', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'en'
+        'locale' => 'en'
     ]);
     
     $result = $service->formatWeight(2.75, $agreement);
@@ -81,7 +81,7 @@ test('formats weight to locale - Russian', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'ru'
+        'locale' => 'ru'
     ]);
     
     $result = $service->formatWeight(3.25, $agreement);
@@ -94,7 +94,7 @@ test('formats distance to locale - German', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'de'
+        'locale' => 'de'
     ]);
     
     $result = $service->formatDistance(10.5, $agreement);
@@ -107,7 +107,7 @@ test('formats distance to locale - English', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'en'
+        'locale' => 'en'
     ]);
     
     $result = $service->formatDistance(5.25, $agreement);
@@ -120,7 +120,7 @@ test('formats distance to locale - Chinese', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'zh'
+        'locale' => 'zh'
     ]);
     
     $result = $service->formatDistance(7.8, $agreement);
@@ -133,7 +133,7 @@ test('formats distance to locale - Japanese', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
-        'language' => 'ja'
+        'locale' => 'ja'
     ]);
     
     $result = $service->formatDistance(12.34, $agreement);
@@ -147,7 +147,7 @@ test('handles unknown currency with fallback', function () {
     
     $agreement = new Agreement([
         'currency' => 'XYZ',
-        'language' => 'en'
+        'locale' => 'en'
     ]);
     
     $result = $service->formatPricing(100.00, $agreement);
@@ -156,12 +156,12 @@ test('handles unknown currency with fallback', function () {
     expect($result)->toContain('XYZ');
 });
 
-test('handles unknown language with fallback to English', function () {
+test('handles unknown locale with fallback to English', function () {
     $service = $this->app->make(FormattingService::class);
     
     $agreement = new Agreement([
         'currency' => 'EUR',
-        'language' => 'unknown'
+        'locale' => 'unknown'
     ]);
     
     $result = $service->formatPricing(50.50, $agreement);
@@ -176,7 +176,7 @@ test('formats French locale correctly', function () {
     
     $agreement = new Agreement([
         'currency' => 'EUR',
-        'language' => 'fr'
+        'locale' => 'fr'
     ]);
     
     $result = $service->formatPricing(1234.56, $agreement);
