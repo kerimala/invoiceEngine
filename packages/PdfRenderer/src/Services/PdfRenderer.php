@@ -5,6 +5,7 @@ namespace Packages\PdfRenderer\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\App;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Packages\InvoiceAssembler\DTOs\Invoice;
@@ -33,19 +34,39 @@ class PdfRenderer
         Log::info('Starting PDF rendering.', ['invoice_id' => $invoiceId]);
 
         try {
+            // Set locale for language-specific rendering
+            $locale = $this->determineLocale($agreement);
+            $originalLocale = App::getLocale();
+            App::setLocale($locale);
+            
+            Log::debug('Set application locale for PDF rendering.', [
+                'invoice_id' => $invoiceId,
+                'locale' => $locale,
+                'original_locale' => $originalLocale
+            ]);
+
             // Ensure the view file exists
             if (!View::exists('pdf-renderer::invoice')) {
                 Log::error('PDF template view not found: pdf-renderer::invoice');
                 throw new \Exception('PDF template not found.');
             }
 
+            // Prepare language configuration
+            $languageConfig = $this->getLanguageConfig($locale);
+
             // Render the HTML from a Blade view
             $html = View::make('pdf-renderer::invoice', [
                 'invoice' => $invoiceData,
                 'agreement' => $agreement,
-                'formatter' => $this->formattingService
+                'formatter' => $this->formattingService,
+                'locale' => $locale,
+                'languageConfig' => $languageConfig
             ])->render();
-            Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId]);
+            
+            // Restore original locale
+            App::setLocale($originalLocale);
+            
+            Log::debug('Rendered HTML from Blade template.', ['invoice_id' => $invoiceId, 'locale' => $locale]);
 
             // Create a new Dompdf instance
             $options = new Options();
@@ -93,5 +114,42 @@ class PdfRenderer
             // Re-throw the exception to be handled by the queue worker
             throw $th;
         }
+    }
+
+    /**
+     * Determine the locale to use for rendering
+     */
+    private function determineLocale(?Agreement $agreement): string
+    {
+        if ($agreement) {
+            // Use invoice_language if set, otherwise fall back to locale or fallback_language
+            return $agreement->invoice_language 
+                ?? $agreement->locale 
+                ?? $agreement->fallback_language 
+                ?? config('invoice-languages.fallback_language', 'en');
+        }
+        
+        return config('invoice-languages.fallback_language', 'en');
+    }
+
+    /**
+     * Get language configuration for the given locale
+     */
+    private function getLanguageConfig(string $locale): array
+    {
+        $supportedLanguages = config('invoice-languages.supported_languages', []);
+        
+        if (isset($supportedLanguages[$locale])) {
+            return $supportedLanguages[$locale];
+        }
+        
+        // Fallback to English configuration
+        $fallbackLocale = config('invoice-languages.fallback_language', 'en');
+        return $supportedLanguages[$fallbackLocale] ?? [
+            'name' => 'English',
+            'rtl' => false,
+            'date_format' => 'M j, Y',
+            'currency_position' => 'before'
+        ];
     }
 }

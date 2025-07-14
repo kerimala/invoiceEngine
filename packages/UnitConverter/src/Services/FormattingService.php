@@ -194,4 +194,48 @@ class FormattingService
         
         return $units[$locale] ?? 'm';
     }
+
+    /**
+     * Format date based on locale from agreement
+     */
+    public function formatDate($date, Agreement $agreement): string
+    {
+        return $this->formatDateWithLocale($date, $agreement->locale);
+    }
+
+    /**
+     * Format date with specific locale
+     */
+    public function formatDateWithLocale($date, string $locale): string
+    {
+        // Convert string to DateTime if needed
+        if (is_string($date)) {
+            $date = new \DateTime($date);
+        }
+        
+        $format = $this->getDateFormat($locale);
+        return $date->format($format);
+    }
+
+    /**
+     * Get date format for locale
+     */
+    private function getDateFormat(string $locale): string
+    {
+        $formats = [
+            'en' => 'm/d/Y',
+            'de' => 'd.m.Y',
+            'fr' => 'd/m/Y',
+            'nl' => 'd-m-Y',
+            'es' => 'd/m/Y',
+            'it' => 'd/m/Y',
+            'pt' => 'd/m/Y',
+            'pl' => 'd.m.Y',
+            'ru' => 'd.m.Y',
+            'zh' => 'Y/m/d',
+            'ja' => 'Y/m/d',
+        ];
+        
+        return $formats[$locale] ?? 'm/d/Y';
+    }
 }

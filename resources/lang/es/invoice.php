@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'title' => 'FACTURA',
+    'customer_number' => 'Número de cliente',
+    'invoice_number' => 'Número de factura',
+    'invoice_date' => 'Fecha de factura',
+    'description' => 'Descripción',
+    'price' => 'Precio',
+    'vat' => 'IVA',
+    'total' => 'Total',
+    'subtotal' => 'Subtotal',
+    'vat_amount' => 'Importe IVA',
+    'total_amount' => 'Importe total',
+    'payment_terms' => 'Términos de pago',
+    'due_date' => 'Fecha de vencimiento',
+    'company_details' => 'Detalles de la empresa',
+    'customer_details' => 'Detalles del cliente',
+    'vat_number' => 'Número IVA',
+    'invoice_amount' => 'Importe de la factura',
+    'payment_info' => 'Pago: el importe se cobrará mediante domiciliación bancaria',
+    'collection_date' => 'Fecha de cobro',
+];

@@ -185,3 +185,90 @@ test('formats French locale correctly', function () {
     expect($result)->toContain('1 234,56');
     expect($result)->toContain('€');
 });
+
+test('formats date with English locale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'en'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('01/15/2024');
+});
+
+test('formats date with German locale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'de'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('15.01.2024');
+});
+
+test('formats date with French locale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'fr'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('15/01/2024');
+});
+
+test('formats date with Dutch locale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'nl'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('15-01-2024');
+});
+
+test('formats date with Spanish locale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'es'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('15/01/2024');
+});
+
+test('formats date with specific locale using formatDateWithLocale', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDateWithLocale($date, 'de');
+    
+    expect($result)->toBe('15.01.2024');
+});
+
+test('formats date with unknown locale falls back to English', function () {
+    $service = $this->app->make(FormattingService::class);
+    
+    $agreement = new Agreement([
+        'locale' => 'unknown'
+    ]);
+    
+    $date = '2024-01-15';
+    $result = $service->formatDate($date, $agreement);
+    
+    expect($result)->toBe('01/15/2024');
+});

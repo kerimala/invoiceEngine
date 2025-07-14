@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'title' => 'FACTUUR',
+    'customer_number' => 'Klantnummer',
+    'invoice_number' => 'Factuurnummer',
+    'invoice_date' => 'Factuurdatum',
+    'description' => 'Omschrijving',
+    'price' => 'Prijs',
+    'vat' => 'BTW',
+    'total' => 'Totaal',
+    'subtotal' => 'Subtotaal',
+    'vat_amount' => 'BTW Bedrag',
+    'total_amount' => 'Totaalbedrag',
+    'payment_terms' => 'Betalingsvoorwaarden',
+    'due_date' => 'Vervaldatum',
+    'company_details' => 'Bedrijfsgegevens',
+    'customer_details' => 'Klantgegevens',
+    'vat_number' => 'BTW nummer',
+    'invoice_amount' => 'Factuurbedrag',
+    'payment_info' => 'Betalen: het bedrag wordt d.m.v. automatische incasso geïncasseerd',
+    'collection_date' => 'Incassodatum',
+];

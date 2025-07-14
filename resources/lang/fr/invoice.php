@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'title' => 'FACTURE',
+    'customer_number' => 'Numéro client',
+    'invoice_number' => 'Numéro de facture',
+    'invoice_date' => 'Date de facture',
+    'description' => 'Description',
+    'price' => 'Prix',
+    'vat' => 'TVA',
+    'total' => 'Total',
+    'subtotal' => 'Sous-total',
+    'vat_amount' => 'Montant TVA',
+    'total_amount' => 'Montant total',
+    'payment_terms' => 'Conditions de paiement',
+    'due_date' => 'Date d\'échéance',
+    'company_details' => 'Détails de l\'entreprise',
+    'customer_details' => 'Détails du client',
+    'vat_number' => 'Numéro TVA',
+    'invoice_amount' => 'Montant de la facture',
+    'payment_info' => 'Paiement: le montant sera prélevé par prélèvement automatique',
+    'collection_date' => 'Date de prélèvement',
+];

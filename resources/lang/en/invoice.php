@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'title' => 'INVOICE',
+    'customer_number' => 'Customer Number',
+    'invoice_number' => 'Invoice Number',
+    'invoice_date' => 'Invoice Date',
+    'description' => 'Description',
+    'price' => 'Price',
+    'vat' => 'VAT',
+    'total' => 'Total',
+    'subtotal' => 'Subtotal',
+    'vat_amount' => 'VAT Amount',
+    'total_amount' => 'Total Amount',
+    'payment_terms' => 'Payment Terms',
+    'due_date' => 'Due Date',
+    'company_details' => 'Company Details',
+    'customer_details' => 'Customer Details',
+    'vat_number' => 'VAT Number',
+    'invoice_amount' => 'Invoice Amount',
+    'payment_info' => 'Payment: the amount will be collected via direct debit',
+    'collection_date' => 'Collection date',
+];
