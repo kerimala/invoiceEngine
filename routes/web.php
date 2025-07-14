@@ -21,6 +21,7 @@ Route::post('invoice/upload', [InvoiceController::class, 'store'])->name('invoic
 Route::post('invoice/generate', [InvoiceController::class, 'generate'])->name('invoice.generate');
 Route::get('agreements', [AgreementController::class, 'index'])->name('agreements.index');
 Route::post('agreement/store', [AgreementController::class, 'store'])->name('agreement.store');
+Route::delete('agreement/{agreement}', [AgreementController::class, 'destroy'])->name('agreement.destroy');
 
 // Test route for PDF rendering
 Route::get('/test-pdf', function () {

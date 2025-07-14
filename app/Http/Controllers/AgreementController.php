@@ -17,7 +17,7 @@ class AgreementController extends Controller
     public function store(Request $request, AgreementService $agreementService)
     {
         $data = $request->validate([
-            'billing_account' => 'required|string',
+            'customer_id' => 'required|string',
             'strategy' => 'required|string',
             'multiplier' => 'required|numeric',
             'vat_rate' => 'required|numeric',
@@ -26,12 +26,18 @@ class AgreementController extends Controller
             'rules' => 'required|json',
         ]);
 
-        $customerId = $data['billing_account'];
-        unset($data['billing_account']);
+        $customerId = $data['customer_id'];
+        unset($data['customer_id']);
         $data['rules'] = json_decode($data['rules'], true);
 
         $agreementService->createNewVersion($customerId, $data);
 
         return back()->with('success', 'Agreement created successfully!');
+    }
+
+    public function destroy(Agreement $agreement)
+    {
+        $agreement->delete();
+        return back()->with('success', 'Agreement deleted successfully!');
     }
 }

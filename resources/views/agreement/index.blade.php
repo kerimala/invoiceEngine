@@ -18,26 +18,34 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Billing Account</th>
+                        <th>Customer ID</th>
                         <th>Strategy</th>
                         <th>Multiplier</th>
                         <th>VAT Rate</th>
                         <th>Currency</th>
                         <th>Locale</th>
                         <th>Rules</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($agreements as $agreement)
                         <tr>
                             <td>{{ $agreement->id }}</td>
-                            <td>{{ $agreement->billing_account }}</td>
+                            <td>{{ $agreement->customer_id }}</td>
                             <td>{{ $agreement->strategy }}</td>
                             <td>{{ $agreement->multiplier }}</td>
                             <td>{{ $agreement->vat_rate }}</td>
                             <td>{{ $agreement->currency }}</td>
                             <td>{{ $agreement->locale }}</td>
                             <td><pre>{{ json_encode($agreement->rules, JSON_PRETTY_PRINT) }}</pre></td>
+                            <td>
+                                <form action="{{ route('agreement.destroy', $agreement->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this agreement?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -52,8 +60,8 @@
         <form action="{{ route('agreement.store') }}" method="POST" class="mt-3">
             @csrf
             <div class="mb-3">
-                <label for="billing_account" class="form-label">Billing Account:</label>
-                <input type="text" id="billing_account" name="billing_account" class="form-control" required>
+                <label for="customer_id" class="form-label">Customer ID:</label>
+                <input type="text" id="customer_id" name="customer_id" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label for="strategy" class="form-label">Strategy:</label>
