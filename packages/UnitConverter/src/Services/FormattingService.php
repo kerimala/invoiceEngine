@@ -21,7 +21,7 @@ class FormattingService
         $cents = $this->unitConverter->toCents($amount);
         $formattedAmount = $cents / 100;
         
-        return $this->formatCurrency($formattedAmount, $agreement->currency, $agreement->locale);
+        return $this->formatCurrency($formattedAmount, $agreement->currency, $agreement->locale ?? 'en');
     }
 
     /**
@@ -31,8 +31,9 @@ class FormattingService
     {
         $nanograms = $this->unitConverter->toNanograms($weight);
         $formattedWeight = $nanograms / 1_000_000_000;
+        $locale = $agreement->locale ?? 'en';
         
-        return $this->formatNumber($formattedWeight, $agreement->locale) . ' ' . $this->getWeightUnit($agreement->locale);
+        return $this->formatNumber($formattedWeight, $locale) . ' ' . $this->getWeightUnit($locale);
     }
 
     /**
@@ -42,8 +43,9 @@ class FormattingService
     {
         $millimeters = $this->unitConverter->toMillimeters($distance);
         $formattedDistance = $millimeters / 1000;
+        $locale = $agreement->locale ?? 'en';
         
-        return $this->formatNumber($formattedDistance, $agreement->locale) . ' ' . $this->getDistanceUnit($agreement->locale);
+        return $this->formatNumber($formattedDistance, $locale) . ' ' . $this->getDistanceUnit($locale);
     }
 
     /**
@@ -200,18 +202,21 @@ class FormattingService
      */
     public function formatDate($date, Agreement $agreement): string
     {
-        return $this->formatDateWithLocale($date, $agreement->locale);
+        return $this->formatDateWithLocale($date, $agreement->locale ?? 'en');
     }
 
     /**
      * Format date with specific locale
      */
-    public function formatDateWithLocale($date, string $locale): string
+    public function formatDateWithLocale($date, ?string $locale): string
     {
         // Convert string to DateTime if needed
         if (is_string($date)) {
             $date = new \DateTime($date);
         }
+        
+        // Use fallback locale if null
+        $locale = $locale ?? 'en';
         
         $format = $this->getDateFormat($locale);
         return $date->format($format);
