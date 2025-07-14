@@ -18,6 +18,8 @@ return [
     'customer_details' => 'Kundendetails',
     'vat_number' => 'USt-IdNr.',
     'invoice_amount' => 'Rechnungsbetrag',
-    'payment_info' => 'Zahlung: Der Betrag wird per Lastschrift eingezogen',
+    'payment_info' => 'Zahlung: der Betrag wird per Lastschrift eingezogen',
     'collection_date' => 'Einzugsdatum',
+    'transport_services' => 'Transportdienstleistungen (inkl. 21% MwSt.)',
+    'administrative_costs' => 'Verwaltungskosten (inkl. 21% MwSt.)',
 ];

@@ -23,14 +23,29 @@ Route::get('agreements', [AgreementController::class, 'index'])->name('agreement
 Route::post('agreement/store', [AgreementController::class, 'store'])->name('agreement.store');
 Route::delete('agreement/{agreement}', [AgreementController::class, 'destroy'])->name('agreement.destroy');
 
-// Test route for PDF rendering
-Route::get('/test-pdf', function () {
+// Test route for PDF rendering with dynamic language support
+Route::get('/test-pdf', function (\Illuminate\Http\Request $request) {
     $pdfRenderer = new \Packages\PdfRenderer\Services\PdfRenderer();
     
-    // Create a test agreement with made-up company info
+    // Get language from query parameter, default to 'nl'
+    $locale = $request->get('lang', 'nl');
+    
+    // Set currency based on locale
+    $currency = match($locale) {
+        'en' => 'USD',
+        'de' => 'EUR',
+        'es' => 'EUR',
+        'fr' => 'EUR',
+        'nl' => 'EUR',
+        default => 'EUR'
+    };
+    
+    // Create a test agreement with dynamic locale
     $agreement = new \App\Models\Agreement([
-        'currency' => 'EUR',
-        'locale' => 'nl',
+        'currency' => $currency,
+        'locale' => $locale,
+        'invoice_language' => $locale,
+        'fallback_language' => 'en',
         'customer_id' => 'test-customer@example.com',
         'invoicing_company_name' => 'Demo Logistics BV',
         'invoicing_company_address' => "Demostraat 123\n1234 AB Voorbeeldstad\nNederland",
@@ -43,6 +58,9 @@ Route::get('/test-pdf', function () {
         'invoice_footer_text' => 'Dit is een demo factuur voor test doeleinden.'
     ]);
     
+    // Set Laravel's app locale for translations
+    app()->setLocale($locale);
+    
     $invoiceData = [
         'invoice_id' => 'TEST-12345',
         'invoice_number' => '12345',
@@ -53,29 +71,35 @@ Route::get('/test-pdf', function () {
         'invoice_date' => date('d-m-Y'),
         'lines' => [
             [
-                'description' => 'Transport diensten (incl. 21% BTW)',
+                'description' => __('invoice.transport_services'),
                 'nett_total' => 1500.00,
                 'vat_amount' => 315.00,
                 'line_total' => 1815.00,
-                'currency' => 'EUR',
+                'currency' => $currency,
                 'agreement_version' => '1.0',
             ],
             [
-                'description' => 'Administratiekosten (incl. 21% BTW)',
+                'description' => __('invoice.administrative_costs'),
                 'nett_total' => 250.00,
                 'vat_amount' => 52.50,
                 'line_total' => 302.50,
-                'currency' => 'EUR',
+                'currency' => $currency,
                 'agreement_version' => '1.0',
             ]
         ],
         'subtotal' => 1750.00,
         'vat_total' => 367.50,
         'total_amount' => 2117.50,
-        'currency' => 'EUR',
+        'currency' => $currency,
     ];
     
     $filePath = $pdfRenderer->render($invoiceData, $agreement);
     
     return response()->file(storage_path('app/' . $filePath));
 })->name('test.pdf');
+// Usage examples:
+// /test-pdf?lang=en (English with USD)
+// /test-pdf?lang=de (German with EUR)
+// /test-pdf?lang=es (Spanish with EUR)
+// /test-pdf?lang=fr (French with EUR)
+// /test-pdf?lang=nl (Dutch with EUR - default)

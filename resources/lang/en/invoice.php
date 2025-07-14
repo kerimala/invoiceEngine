@@ -20,4 +20,6 @@ return [
     'invoice_amount' => 'Invoice Amount',
     'payment_info' => 'Payment: the amount will be collected via direct debit',
     'collection_date' => 'Collection date',
+    'transport_services' => 'Transport services (incl. 21% VAT)',
+    'administrative_costs' => 'Administrative costs (incl. 21% VAT)',
 ];

@@ -20,4 +20,6 @@ return [
     'invoice_amount' => 'Factuurbedrag',
     'payment_info' => 'Betalen: het bedrag wordt d.m.v. automatische incasso geïncasseerd',
     'collection_date' => 'Incassodatum',
+    'transport_services' => 'Transport diensten (incl. 21% BTW)',
+    'administrative_costs' => 'Administratiekosten (incl. 21% BTW)',
 ];

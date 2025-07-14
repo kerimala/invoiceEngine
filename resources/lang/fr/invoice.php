@@ -20,4 +20,6 @@ return [
     'invoice_amount' => 'Montant de la facture',
     'payment_info' => 'Paiement: le montant sera prélevé par prélèvement automatique',
     'collection_date' => 'Date de prélèvement',
+    'transport_services' => 'Services de transport (incl. 21% TVA)',
+    'administrative_costs' => 'Frais administratifs (incl. 21% TVA)',
 ];

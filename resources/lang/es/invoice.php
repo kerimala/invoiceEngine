@@ -20,4 +20,6 @@ return [
     'invoice_amount' => 'Importe de la factura',
     'payment_info' => 'Pago: el importe se cobrará mediante domiciliación bancaria',
     'collection_date' => 'Fecha de cobro',
+    'transport_services' => 'Servicios de transporte (incl. 21% IVA)',
+    'administrative_costs' => 'Costos administrativos (incl. 21% IVA)',
 ];
